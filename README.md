@@ -26,6 +26,8 @@ The repository currently contains the initial scaffold:
 
 Business logic is partially implemented for pipeline structure, distance, quality rules, and local official-source integration.
 
+The remaining gap for a meaningful real-data run is not pipeline wiring. It is local official input data plus the final search-point choice for the target area.
+
 ## Project Layout
 
 ```text
@@ -83,6 +85,8 @@ This sample run uses placeholder JSON input files in `data/raw/` so the pipeline
 
 To switch to local official source files, update `input_mode` in `configs/pipeline/schools.yml` from `sample` to `official` and place the configured files under `data/raw/`.
 
+The current KT19 area config now uses an explicit user-supplied search point in [`configs/areas/kt19.yml`](configs/areas/kt19.yml). This is a provisional district proxy for MVP testing, not a claimed official centroid.
+
 Run tests:
 
 ```bash
@@ -128,3 +132,19 @@ Real pipeline inputs should come from:
 - Ofsted state-funded schools inspection data
 
 The current integration is file-based and local. See [docs/SOURCES.md](docs/SOURCES.md) for the source references and caveats.
+
+### Real KT19 Run Checklist
+
+To perform the first meaningful KT19 test with real data:
+
+1. Download the current official GIAS establishments file and place it at the path configured by `official_input.schools_path`.
+2. Download or export the current official Ofsted state-funded schools inspection file and place it at the path configured by `official_input.ofsted_path`.
+3. Confirm the real file headers match the configured column maps in [`configs/pipeline/schools.yml`](configs/pipeline/schools.yml).
+4. Switch `input_mode` from `sample` to `official`.
+5. Run:
+
+```bash
+PYTHONPATH=src python3 -m london_data_model.cli schools run --area KT19
+```
+
+If the files or headers do not match, the pipeline should fail fast with an explicit official-source configuration error.

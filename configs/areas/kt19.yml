@@ -1,6 +1,6 @@
 area_id: KT19
 area_type: district
 label: Kingston upon Thames KT19
-search_point_method: unresolved
-latitude: null
-longitude: null
+search_point_method: user_supplied
+latitude: 51.3490
+longitude: -0.2680
