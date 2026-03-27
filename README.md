@@ -23,7 +23,7 @@ The repository currently contains the initial scaffold:
 - local data output folders
 - smoke tests
 
-Business logic and real data extraction are not implemented yet.
+Business logic is partially implemented for pipeline structure, distance, and quality rules. Real official source integration is not implemented yet.
 
 ## Project Layout
 
@@ -72,6 +72,14 @@ Run the CLI stub:
 ldm schools run --area KT19
 ```
 
+Run the checked-in KT19 sample pipeline:
+
+```bash
+PYTHONPATH=src python3 -m london_data_model.cli schools run --area KT19
+```
+
+This sample run uses placeholder JSON input files in `data/raw/` so the pipeline can execute end to end without inventing official school records.
+
 Run tests:
 
 ```bash
@@ -86,11 +94,11 @@ python3 -m unittest discover -s tests -p 'test_*.py' -v
 - no database in V1
 - prefer simple, traceable outputs
 
-## Next Steps
+## Sample Inputs
 
-The next implementation target is the school pipeline skeleton:
+The checked-in sample input files are:
 
-- define stage interfaces more fully
-- wire placeholder data contracts
-- keep logging and manifests explicit
-- avoid real source integration until the interfaces are stable
+- `data/raw/kt19_schools_sample.json`
+- `data/raw/kt19_ofsted_sample.json`
+
+They are deliberately empty placeholders. They exist to make the KT19 pipeline run reproducible while preserving the project rule that published outputs should be based on official data.

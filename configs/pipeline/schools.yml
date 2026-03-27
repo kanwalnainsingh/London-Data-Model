@@ -2,3 +2,7 @@ pipeline_name: schools
 version: 1
 structured_output_format: json
 manifest_enabled: true
+sample_input:
+  enabled: true
+  schools_path: data/raw/kt19_schools_sample.json
+  ofsted_path: data/raw/kt19_ofsted_sample.json
