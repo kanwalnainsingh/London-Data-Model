@@ -1,6 +1,7 @@
 import json
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 from london_data_model.pipelines.schools.extract import OfficialSourceConfigError, extract
@@ -14,6 +15,7 @@ class ExtractStageTestCase(unittest.TestCase):
             pipeline_name="schools",
             area="KT19",
             run_id="test-run",
+            started_at=datetime.now(timezone.utc),
             config_path=None,
             area_config=AreaConfig(
                 area_id="KT19",

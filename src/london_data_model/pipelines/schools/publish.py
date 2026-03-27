@@ -6,11 +6,13 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
-from london_data_model.settings import DOCS_DATA_DIR, MANIFESTS_DATA_DIR, MARTS_DATA_DIR
+from london_data_model.settings import DOCS_DATA_DIR, MANIFESTS_DATA_DIR, MARTS_DATA_DIR, PROJECT_ROOT
 from london_data_model.types import (
+    ExtractResult,
     PipelineContext,
     PublishResult,
     SCHOOL_OUTPUT_FIELDS,
+    TransformResult,
     ValidateResult,
 )
 
@@ -39,6 +41,8 @@ def _build_public_status_payload(
         "pipeline_name": manifest_payload["pipeline_name"],
         "pipeline_version": manifest_payload["pipeline_version"],
         "run_id": manifest_payload["run_id"],
+        "started_at": manifest_payload["started_at"],
+        "finished_at": manifest_payload["finished_at"],
         "generated_at": summary_payload["generated_at"],
         "input_mode": context.pipeline_config.get("input_mode", "sample"),
         "school_count_total": summary_payload["school_count_total"],
@@ -55,15 +59,39 @@ def _build_public_status_payload(
     }
 
 
+def _sanitize_public_source_path(source_path: str) -> str:
+    path = Path(source_path)
+    if path.is_absolute():
+        try:
+            return str(path.relative_to(PROJECT_ROOT))
+        except ValueError:
+            return path.name
+    return source_path
+
+
+def _build_public_input_sources(input_sources: list) -> list:
+    public_sources = []
+    for source in input_sources:
+        public_source = dict(source)
+        if public_source.get("source_path"):
+            public_source["source_path"] = _sanitize_public_source_path(public_source["source_path"])
+        public_sources.append(public_source)
+    return public_sources
+
+
 def _build_public_manifest_payload(manifest_payload: dict) -> dict:
     return {
         "run_id": manifest_payload["run_id"],
+        "started_at": manifest_payload["started_at"],
+        "finished_at": manifest_payload["finished_at"],
         "pipeline_name": manifest_payload["pipeline_name"],
         "pipeline_version": manifest_payload["pipeline_version"],
         "area_id": manifest_payload["area_id"],
+        "input_mode": manifest_payload["input_mode"],
         "search_point_method": manifest_payload["search_point_method"],
         "search_point": manifest_payload["search_point"],
         "search_point_metadata": manifest_payload["search_point_metadata"],
+        "input_sources": _build_public_input_sources(manifest_payload["input_sources"]),
         "record_counts": manifest_payload["record_counts"],
         "quality_counts": manifest_payload["quality_counts"],
         "notes": manifest_payload["notes"],
@@ -74,7 +102,25 @@ def _build_public_manifest_payload(manifest_payload: dict) -> dict:
     }
 
 
-def publish(validated: ValidateResult, context: PipelineContext) -> PublishResult:
+def _build_input_sources(extracted: ExtractResult) -> list:
+    return [
+        {
+            "source_name": source.source_name,
+            "source_type": source.source_type,
+            "source_path": source.source_path,
+            "status": source.status,
+            "notes": source.notes,
+        }
+        for source in extracted.sources
+    ]
+
+
+def publish(
+    extracted: ExtractResult,
+    transformed: TransformResult,
+    validated: ValidateResult,
+    context: PipelineContext,
+) -> PublishResult:
     """Publish pipeline outputs and manifests."""
     LOGGER.info(
         "Starting publish stage for area=%s with %s validated records",
@@ -108,11 +154,15 @@ def publish(validated: ValidateResult, context: PipelineContext) -> PublishResul
     }
     _write_json(summary_path, summary_payload)
 
+    finished_at = datetime.now(timezone.utc)
     manifest_payload = {
         "run_id": context.run_id,
+        "started_at": context.started_at.isoformat(),
+        "finished_at": finished_at.isoformat(),
         "pipeline_name": context.pipeline_name,
         "pipeline_version": context.pipeline_config.get("version"),
         "area_id": context.area_config.area_id,
+        "input_mode": context.pipeline_config.get("input_mode", "sample"),
         "search_point_method": context.area_config.search_point_method,
         "search_point": {
             "latitude": context.area_config.latitude,
@@ -124,12 +174,22 @@ def publish(validated: ValidateResult, context: PipelineContext) -> PublishResul
             "source_reference": context.area_config.search_point_source_reference,
             "notes": context.area_config.search_point_notes,
         },
+        "input_sources": _build_input_sources(extracted),
+        "effective_run_config": {
+            "structured_output_format": context.pipeline_config.get("structured_output_format"),
+            "manifest_enabled": context.pipeline_config.get("manifest_enabled"),
+            "config_path": str(context.config_path) if context.config_path else None,
+        },
         "output_files": {
             "csv": str(csv_path),
             "records_json": str(records_path),
             "summary_json": str(summary_path),
         },
         "record_counts": {
+            "extracted": len(extracted.records),
+            "transformed_included": len(transformed.records),
+            "transformed_excluded": transformed.excluded_record_count,
+            "validated": len(validated.records),
             "published": len(validated.records),
         },
         "quality_counts": validated.quality_summary,

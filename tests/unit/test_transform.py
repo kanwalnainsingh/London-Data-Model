@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, timezone
 
 from london_data_model.pipelines.schools.transform import (
     assign_accessibility_band,
@@ -22,6 +23,7 @@ class TransformRulesTestCase(unittest.TestCase):
             pipeline_name="schools",
             area="KT19",
             run_id="test-run",
+            started_at=datetime.now(timezone.utc),
             config_path=None,
             area_config=AreaConfig(
                 area_id="KT19",

@@ -2,6 +2,7 @@
 
 import logging
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -68,6 +69,7 @@ def run(
         pipeline_name="schools",
         area=area,
         run_id=uuid.uuid4().hex[:12],
+        started_at=datetime.now(timezone.utc),
         config_path=config_path,
         area_config=area_config,
         pipeline_config=pipeline_config,
@@ -83,7 +85,7 @@ def run(
     extracted = extract(context)
     transformed = transform(extracted, context)
     validated = validate(transformed, context)
-    published = publish(validated, context)
+    published = publish(extracted, transformed, validated, context)
     LOGGER.info(
         "Finished schools pipeline for area=%s run_id=%s artifacts=%s",
         context.area,

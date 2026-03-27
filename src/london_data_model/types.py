@@ -1,6 +1,7 @@
 """Shared types for pipeline inputs and outputs."""
 
 from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -80,6 +81,7 @@ class PipelineContext:
     pipeline_name: str
     area: str
     run_id: str
+    started_at: datetime
     config_path: Optional[Path]
     area_config: AreaConfig
     pipeline_config: Dict[str, Any]

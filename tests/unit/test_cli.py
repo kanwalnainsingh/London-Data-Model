@@ -71,16 +71,26 @@ class CliTestCase(unittest.TestCase):
         self.assertEqual(result.status, "success")
         self.assertEqual(summary_payload["area_id"], "KT19")
         self.assertEqual(summary_payload["school_count_total"], 0)
+        self.assertIn("started_at", manifest_payload)
+        self.assertIn("finished_at", manifest_payload)
+        self.assertEqual(manifest_payload["input_mode"], "sample")
+        self.assertEqual(len(manifest_payload["input_sources"]), 2)
+        self.assertEqual(manifest_payload["record_counts"]["extracted"], 0)
+        self.assertEqual(manifest_payload["record_counts"]["transformed_included"], 0)
+        self.assertEqual(manifest_payload["record_counts"]["transformed_excluded"], 0)
         self.assertEqual(
             manifest_payload["search_point_metadata"]["source_type"],
             "configured_coordinates",
         )
         self.assertEqual(public_status_payload["area_id"], "KT19")
         self.assertEqual(public_status_payload["school_count_total"], 0)
+        self.assertIn("started_at", public_status_payload)
+        self.assertIn("finished_at", public_status_payload)
         self.assertEqual(
             public_manifest_payload["search_point_metadata"]["source_type"],
             "configured_coordinates",
         )
+        self.assertEqual(len(public_manifest_payload["input_sources"]), 2)
 
     def test_pipeline_run_raises_clear_error_for_missing_official_files(self) -> None:
         with self.assertRaises(OfficialSourceConfigError) as error:
