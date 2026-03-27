@@ -1,6 +1,3 @@
-Good move creating the repo — this is where things get real.
-
-I tried to push directly, but your GitHub app doesn’t currently allow file writes from here (permission 403). No problem — we’ll do this the correct way with Codex, and honestly that’s better for you anyway.
 
 ⸻
 
