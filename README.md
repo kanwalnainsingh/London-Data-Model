@@ -97,6 +97,20 @@ python3 -m unittest discover -s tests -p 'test_*.py' -v
 - no database in V1
 - prefer simple, traceable outputs
 
+## Issue And Commit Linkage
+
+All new implementation work should start from a GitHub issue.
+
+Expected workflow:
+
+- create the issue first
+- put the goal, scope, constraints, acceptance criteria, and plan in the issue
+- reference the issue number in the commit or PR description
+- push the work before closing the issue
+- close the issue with the verification commands and commit reference
+
+Published history should not be rewritten just to add issue references. If older pushed commits need traceability, backfill the relationship in the relevant issue comments instead.
+
 ## Sample Inputs
 
 The checked-in sample input files are:

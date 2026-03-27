@@ -641,8 +641,10 @@ Delivery should stay issue-driven:
 - Create the GitHub issue first
 - Put the task goal, scope, constraints, acceptance criteria, and plan in the issue
 - Implement only after the issue exists
+- Reference the issue number in the commit or PR description whenever work is pushed
 - Push changes before closing the issue
 - Close the issue with verification details and commit reference
+- Backfill commit links in issue comments when older published commits cannot be rewritten safely
 
 ## 19. Manifest Requirements
 
