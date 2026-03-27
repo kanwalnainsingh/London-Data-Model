@@ -9,6 +9,16 @@ from london_data_model.types import ExtractResult, PipelineContext, SchoolRecord
 
 LOGGER = logging.getLogger(__name__)
 EARTH_RADIUS_KM = 6371.0
+EXCLUDED_ESTABLISHMENT_TERMS = (
+    "independent",
+    "private",
+    "special",
+    "pupil referral",
+    "hospital",
+    "college",
+    "further education",
+    "sixth form college",
+)
 
 
 def normalize_phase(phase: Optional[str]) -> Optional[str]:
@@ -16,11 +26,45 @@ def normalize_phase(phase: Optional[str]) -> Optional[str]:
         return None
 
     normalized = str(phase).strip().lower().replace("-", " ").replace("_", " ")
-    if normalized == "all through":
+    if normalized == "all through" or ("primary" in normalized and "secondary" in normalized):
         return "all_through"
-    if normalized in ("primary", "secondary"):
+    if normalized == "primary":
+        return "primary"
+    if normalized == "secondary":
         return normalized
     return None
+
+
+def normalize_open_status(value: Any) -> Optional[bool]:
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return None
+
+    normalized = str(value).strip().lower()
+    if normalized.startswith("open"):
+        return True
+    if normalized.startswith("closed"):
+        return False
+    return None
+
+
+def is_mainstream_establishment(establishment_type: Optional[str]) -> bool:
+    if not establishment_type:
+        return True
+
+    normalized = str(establishment_type).strip().lower()
+    return not any(term in normalized for term in EXCLUDED_ESTABLISHMENT_TERMS)
+
+
+def is_in_scope_school(record: SchoolRecord) -> bool:
+    if record.phase not in ("primary", "secondary", "all_through"):
+        return False
+    if record.is_open is not True:
+        return False
+    if not is_mainstream_establishment(record.establishment_type):
+        return False
+    return True
 
 
 def resolve_threshold_profile(phase: Optional[str], threshold_config: Dict[str, Any]) -> Optional[str]:
@@ -110,6 +154,7 @@ def calculate_proximity_score(
 
 def build_school_record(raw_record: Dict[str, Any], context: PipelineContext) -> SchoolRecord:
     phase = normalize_phase(raw_record.get("phase"))
+    is_open = normalize_open_status(raw_record.get("is_open"))
     distance_km = calculate_distance_km(
         origin_latitude=context.area_config.latitude,
         origin_longitude=context.area_config.longitude,
@@ -125,7 +170,7 @@ def build_school_record(raw_record: Dict[str, Any], context: PipelineContext) ->
         longitude=raw_record.get("longitude"),
         phase=phase,
         establishment_type=str(raw_record.get("establishment_type", "")),
-        is_open=bool(raw_record.get("is_open", True)),
+        is_open=is_open if is_open is not None else False,
         distance_km=distance_km,
         accessibility_band=assign_accessibility_band(
             phase=phase,
@@ -151,11 +196,26 @@ def transform(extracted: ExtractResult, context: PipelineContext) -> TransformRe
         len(extracted.records),
     )
 
-    records = [build_school_record(raw_record=record, context=context) for record in extracted.records]
+    records = []
+    excluded_record_count = 0
+    for raw_record in extracted.records:
+        record = build_school_record(raw_record=raw_record, context=context)
+        if is_in_scope_school(record):
+            records.append(record)
+        else:
+            excluded_record_count += 1
+
     notes = list(extracted.notes)
     notes.append(
         "Distance, accessibility band, and proximity score are now applied when coordinates are present."
     )
+    notes.append(
+        "Transform applies V1 scope filters for mainstream, open primary/secondary/all-through schools."
+    )
 
-    LOGGER.info("Transform stage completed with %s transformed records", len(records))
-    return TransformResult(records=records, excluded_record_count=0, notes=notes)
+    LOGGER.info(
+        "Transform stage completed with %s included records and %s excluded records",
+        len(records),
+        excluded_record_count,
+    )
+    return TransformResult(records=records, excluded_record_count=excluded_record_count, notes=notes)
