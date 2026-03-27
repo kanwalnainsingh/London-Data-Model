@@ -13,6 +13,10 @@ from london_data_model.types import ExtractResult, PipelineContext, SourceDescri
 LOGGER = logging.getLogger(__name__)
 
 
+class OfficialSourceConfigError(ValueError):
+    """Raised when official input configuration or file shape is invalid."""
+
+
 def _resolve_input_path(raw_path: str) -> Path:
     path = Path(raw_path)
     if path.is_absolute():
@@ -32,10 +36,22 @@ def _load_json_array(path: Path) -> List[Dict[str, Any]]:
 
 def _load_csv_rows(path: Path) -> List[Dict[str, Any]]:
     if not path.exists():
-        return []
+        raise OfficialSourceConfigError("Official input file not found: {0}".format(path))
 
     with path.open("r", encoding="utf-8-sig", newline="") as handle:
         return list(csv.DictReader(handle))
+
+
+def _load_csv_header(path: Path) -> List[str]:
+    if not path.exists():
+        raise OfficialSourceConfigError("Official input file not found: {0}".format(path))
+
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.reader(handle)
+        header = next(reader, None)
+    if not header:
+        raise OfficialSourceConfigError("Official input file has no header row: {0}".format(path))
+    return header
 
 
 def _load_records(path: Path, file_format: str) -> List[Dict[str, Any]]:
@@ -44,6 +60,26 @@ def _load_records(path: Path, file_format: str) -> List[Dict[str, Any]]:
     if file_format == "csv":
         return _load_csv_rows(path)
     raise ValueError("Unsupported input format: {0}".format(file_format))
+
+
+def _validate_column_map(name: str, column_map: Dict[str, str]) -> None:
+    if not column_map:
+        raise OfficialSourceConfigError(
+            "Missing required column map for official source: {0}".format(name)
+        )
+
+
+def _validate_csv_headers(path: Path, column_map: Dict[str, str], source_name: str) -> None:
+    header = set(_load_csv_header(path))
+    missing_headers = sorted(
+        source_field
+        for source_field in column_map.values()
+        if source_field not in header
+    )
+    if missing_headers:
+        raise OfficialSourceConfigError(
+            "{0} is missing required headers: {1}".format(source_name, ", ".join(missing_headers))
+        )
 
 
 def _build_address(record: Dict[str, Any]) -> str:
@@ -154,6 +190,13 @@ def _extract_official_input(context: PipelineContext) -> ExtractResult:
     schools_column_map = official_input.get("schools_column_map", {})
     ofsted_column_map = official_input.get("ofsted_column_map", {})
     merge_key = str(official_input.get("merge_key", "school_urn"))
+
+    _validate_column_map("schools_column_map", schools_column_map)
+    _validate_column_map("ofsted_column_map", ofsted_column_map)
+    if schools_format == "csv":
+        _validate_csv_headers(schools_path, schools_column_map, "schools_source")
+    if ofsted_format == "csv":
+        _validate_csv_headers(ofsted_path, ofsted_column_map, "ofsted_source")
 
     schools_records = [
         _map_record(record, schools_column_map) for record in _load_records(schools_path, schools_format)

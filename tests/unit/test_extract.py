@@ -3,12 +3,28 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from london_data_model.pipelines.schools.extract import extract
+from london_data_model.pipelines.schools.extract import OfficialSourceConfigError, extract
 from london_data_model.types import AreaConfig, PipelineContext
 from london_data_model.utils.config import load_threshold_config
 
 
 class ExtractStageTestCase(unittest.TestCase):
+    def build_context(self, pipeline_config):
+        return PipelineContext(
+            pipeline_name="schools",
+            area="KT19",
+            run_id="test-run",
+            config_path=None,
+            area_config=AreaConfig(
+                area_id="KT19",
+                area_type="district",
+                label="KT19",
+                search_point_method="unresolved",
+            ),
+            pipeline_config=pipeline_config,
+            threshold_config=load_threshold_config(),
+        )
+
     def test_extract_loads_configured_sample_input_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             schools_path = Path(tmp_dir) / "schools.json"
@@ -33,26 +49,15 @@ class ExtractStageTestCase(unittest.TestCase):
             )
             ofsted_path.write_text("[]", encoding="utf-8")
 
-            context = PipelineContext(
-                pipeline_name="schools",
-                area="KT19",
-                run_id="test-run",
-                config_path=None,
-                area_config=AreaConfig(
-                    area_id="KT19",
-                    area_type="district",
-                    label="KT19",
-                    search_point_method="unresolved",
-                ),
-                pipeline_config={
+            context = self.build_context(
+                {
                     "version": 1,
                     "sample_input": {
                         "enabled": True,
                         "schools_path": str(schools_path),
                         "ofsted_path": str(ofsted_path),
                     },
-                },
-                threshold_config=load_threshold_config(),
+                }
             )
 
             result = extract(context)
@@ -85,18 +90,8 @@ class ExtractStageTestCase(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            context = PipelineContext(
-                pipeline_name="schools",
-                area="KT19",
-                run_id="test-run",
-                config_path=None,
-                area_config=AreaConfig(
-                    area_id="KT19",
-                    area_type="district",
-                    label="KT19",
-                    search_point_method="unresolved",
-                ),
-                pipeline_config={
+            context = self.build_context(
+                {
                     "version": 1,
                     "input_mode": "official",
                     "official_input": {
@@ -125,8 +120,7 @@ class ExtractStageTestCase(unittest.TestCase):
                             "ofsted_report_url": "Web link",
                         },
                     },
-                },
-                threshold_config=load_threshold_config(),
+                }
             )
 
             result = extract(context)
@@ -135,6 +129,61 @@ class ExtractStageTestCase(unittest.TestCase):
         self.assertEqual(result.records[0]["school_name"], "Sample School")
         self.assertEqual(result.records[0]["ofsted_rating_latest"], "Good")
         self.assertEqual(result.records[0]["school_urn"], "123")
+
+    def test_extract_official_mode_raises_for_missing_file(self) -> None:
+        context = self.build_context(
+            {
+                "version": 1,
+                "input_mode": "official",
+                "official_input": {
+                    "schools_path": "/tmp/does-not-exist-gias.csv",
+                    "schools_format": "csv",
+                    "ofsted_path": "/tmp/does-not-exist-ofsted.csv",
+                    "ofsted_format": "csv",
+                    "schools_column_map": {"school_urn": "URN"},
+                    "ofsted_column_map": {"school_urn": "URN"},
+                },
+            }
+        )
+
+        with self.assertRaises(OfficialSourceConfigError) as error:
+            extract(context)
+
+        self.assertIn("Official input file not found", str(error.exception))
+
+    def test_extract_official_mode_raises_for_missing_required_header(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            schools_path = Path(tmp_dir) / "gias.csv"
+            ofsted_path = Path(tmp_dir) / "ofsted.csv"
+            schools_path.write_text("URN,EstablishmentName\n123,Sample School\n", encoding="utf-8")
+            ofsted_path.write_text("URN,Overall effectiveness\n123,Good\n", encoding="utf-8")
+
+            context = self.build_context(
+                {
+                    "version": 1,
+                    "input_mode": "official",
+                    "official_input": {
+                        "schools_path": str(schools_path),
+                        "schools_format": "csv",
+                        "ofsted_path": str(ofsted_path),
+                        "ofsted_format": "csv",
+                        "schools_column_map": {
+                            "school_urn": "URN",
+                            "school_name": "EstablishmentName",
+                            "postcode": "Postcode",
+                        },
+                        "ofsted_column_map": {
+                            "school_urn": "URN",
+                            "ofsted_rating_latest": "Overall effectiveness",
+                        },
+                    },
+                }
+            )
+
+            with self.assertRaises(OfficialSourceConfigError) as error:
+                extract(context)
+
+        self.assertIn("schools_source is missing required headers", str(error.exception))
 
 
 if __name__ == "__main__":
