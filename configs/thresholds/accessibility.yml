@@ -1,0 +1,10 @@
+primary:
+  very_close_max_km: 1
+  close_max_km: 2
+  moderate_max_km: 4
+secondary:
+  very_close_max_km: 2
+  close_max_km: 5
+  moderate_max_km: 8
+all_through:
+  threshold_profile: unresolved

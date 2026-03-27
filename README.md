@@ -1,320 +1,96 @@
+# London Data Model
 
-⸻
+London Data Model is a GitHub-first Python project for building local-data pipelines from official UK sources.
 
-🚀 What you need now (this is your handoff)
+The first pipeline focuses on school discovery for `KT19`. It is designed to:
 
-I’ve distilled EVERYTHING we discussed into a single source-of-truth plan below.
+- find nearby state-funded mainstream schools
+- compute distance from a configured search point
+- assign simple accessibility bands
+- attach official Ofsted context
+- surface data quality issues instead of hiding them
 
-👉 You will paste this into your repo as:
+The project follows the execution plan in [docs/PLAN.md](docs/PLAN.md).
 
-docs/PLAN.md
+## Current Status
 
-This becomes:
-	•	your architecture
-	•	your product spec
-	•	your Codex instruction base
-	•	your anti-hallucination guardrail
+The repository currently contains the initial scaffold:
 
-⸻
+- Python package under `src/`
+- CLI entry point: `ldm`
+- school pipeline module structure
+- config folders for areas, pipeline settings, and thresholds
+- local data output folders
+- smoke tests
 
-📄 COPY THIS INTO YOUR REPO (IMPORTANT)
+Business logic and real data extraction are not implemented yet.
 
-Create file:
+## Project Layout
 
-docs/PLAN.md
-
-Paste this:
-
-London Data Model — Project Plan
-
-Purpose
-
-Build an open-source, GitHub-first data pipeline that helps users explore local areas using official UK data.
-
-Start with:
-👉 School discovery for KT19
-
-Then expand to:
-👉 Admissions / catchment relevance (priority next)
-
-⸻
-
-V1 Goal (what we are building now)
-
-Given a postcode or district (KT19):
-	•	Find nearby state-funded mainstream schools
-	•	Compute distance from search point
-	•	Show accessibility (distance-based)
-	•	Include official Ofsted context
-	•	Label all data quality issues clearly
-	•	Output clean, usable data
-
-⸻
-
-V2 Goal (next step)
-	•	Admissions / catchment relevance
-	•	Distance-based admission signals
-	•	Catchment where official data exists
-
-⚠️ Do NOT predict admissions in V1
-
-⸻
-
-Scope Decisions
-
-Include
-	•	Primary
-	•	Secondary
-	•	All-through
-
-Exclude (for now)
-	•	Private
-	•	Special schools
-	•	Colleges
-
-⸻
-
-Required Fields
-
-Each school must include:
-	•	school_name
-	•	school_urn
-	•	address
-	•	postcode
-	•	latitude
-	•	longitude
-	•	phase
-	•	establishment_type
-	•	is_open
-	•	distance_km
-	•	accessibility_band
-	•	proximity_score
-	•	ofsted_rating_latest
-	•	ofsted_inspection_date_latest
-	•	ofsted_report_url
-	•	data_quality_status
-	•	data_quality_flags
-
-⸻
-
-Accessibility Logic
-
-Primary:
-	•	0–1 km → very_close
-	•	1–2 km → close
-	•	2–4 km → moderate
-	•	4+ km → far
-
-Secondary:
-	•	0–2 km → very_close
-	•	2–5 km → close
-	•	5–8 km → moderate
-	•	8+ km → far
-
-⸻
-
-Data Quality Rules
-	•	NEVER drop records silently
-	•	ALWAYS label issues
-
-Fields:
-	•	data_quality_status = complete | partial | poor
-	•	data_quality_flags = []
-
-Examples:
-	•	missing_postcode
-	•	missing_coordinates
-	•	missing_ofsted_rating
-	•	invalid_phase
-	•	distance_estimated
-
-⸻
-
-Non-Negotiables
-	•	Official data only
-	•	No hallucinated insights
-	•	No AI-generated “school strengths”
-	•	No admission guarantees
-	•	Full traceability
-	•	No database in V1
-
-⸻
-
-Architecture (simple)
+```text
+configs/
+  areas/
+  pipeline/
+  thresholds/
 
 data/
-raw/
-staging/
-marts/
-manifests/
+  raw/
+  staging/
+  marts/
+  manifests/
+
+docs/
+  PLAN.md
 
 src/
-pipelines/schools/
-extract.py
-transform.py
-validate.py
-publish.py
-pipeline.py
+  london_data_model/
+    cli.py
+    pipelines/
+      schools/
 
-⸻
+tests/
+```
 
-Pipeline Flow
+## Getting Started
 
-extract → transform → validate → publish
+Create and activate a virtual environment:
 
-⸻
-
-Outputs
-	1.	Table (CSV)
-	2.	Structured data (parquet/json)
-	3.	Summary (JSON)
-	4.	Manifest (traceability)
-
-⸻
-
-V2 (IMPORTANT)
-
-Prepare for:
-	•	admissions_policy_url
-	•	catchment flags
-	•	distance criteria
-	•	offer distance
-
-BUT DO NOT IMPLEMENT YET
-
-⸻
-
-First Milestone
-
-KT19 pipeline working end-to-end:
-	•	input → process → output → quality flags
-
-⸻
-
-Golden Rule
-
-Better to be:
-👉 correct + simple
-
-than:
-👉 clever + wrong:—
-
-🧠 Now — how to use Codex (this is the key)
-
-Step 1 — Open Codex in your repo
-
-Then give this EXACT first task:Task: Scaffold project from PLAN.md
-
-Context:
-This repo contains docs/PLAN.md which defines the full project.
-
-Goal:
-Create the initial project scaffold matching the plan.
-
-Requirements:
-	•	Create folder structure
-	•	Create Python package under src/
-	•	Add CLI entry point
-	•	Add configs/
-	•	Add empty pipeline modules
-	•	Add Makefile
-	•	Add pyproject.toml
-
-Constraints:
-	•	Do NOT implement business logic yet
-	•	Follow PLAN.md strictly
-	•	Keep code clean and minimal
-
-Acceptance criteria:
-	•	Project installs locally
-	•	Folder structure matches PLAN.md
-	•	CLI runs (even if stub):—
-
-Step 2 — Next Codex taskTask: Implement school pipeline skeleton
-
-Goal:
-Create extract, transform, validate, publish modules.
-
-Requirements:
-	•	Define function interfaces
-	•	Add logging
-	•	Add placeholder logic
-	•	Wire pipeline.run()
-
-Do NOT:
-	•	fetch real data yet
-	•	implement scoring yet:—
-
-Step 3 — Next Codex taskTask: Add distance + accessibility logic
-
-Goal:
-	•	Compute distance_km
-	•	Assign accessibility_band
-	•	Assign proximity_score
-
-Requirements:
-	•	Use simple formula (Haversine)
-	•	Use config for thresholds
-	•	Add unit tests:—
-
-Step 4 — Next Codex taskTask: Add data quality flags
-
-Goal:
-	•	Implement data_quality_status
-	•	Implement data_quality_flags
-
-Rules:
-	•	Do NOT drop records
-	•	Flag issues clearly:—
-
-Step 5 — Next Codex taskcTask: Add KT19 sample run
-
-Goal:
-	•	Add sample input
-	•	Run pipeline
-	•	Generate outputs in data/marts/:—
-
-⚙️ Commands to start
-
-git clone https://github.com/kanwalnainsingh/London-Data-Model.git
-cd London-Data-Model
-
-python -m venv .venv
+```bash
+python3 -m venv .venv
 source .venv/bin/activate
+```
 
-# after scaffold
+Install the project:
+
+```bash
 pip install -e .[dev]
+```
 
-pytest
+Run the CLI stub:
 
+```bash
+ldm schools run --area KT19
+```
 
-⸻
+Run tests:
 
-🔥 Final guidance (this matters)
+```bash
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+```
 
-Do NOT:
-	•	jump to “full platform”
-	•	add 10 datasets
-	•	over-engineer infra
+## Development Principles
 
-Do:
-	•	make KT19 pipeline correct
-	•	keep outputs honest
-	•	build trust in data
+- official data only
+- no admissions prediction in V1
+- no silent record dropping
+- no database in V1
+- prefer simple, traceable outputs
 
-⸻
+## Next Steps
 
-🚀 What you do now
-	1.	Create docs/PLAN.md (paste above)
-	2.	Open Codex
-	3.	Run Task 1
-	4.	Come back here after first scaffold
+The next implementation target is the school pipeline skeleton:
 
-⸻
-
-When you come back, I’ll:
-	•	review your repo structure
-	•	fix mistakes early
-	•	guide next step
-
-This is a very strong start — now we execute.
+- define stage interfaces more fully
+- wire placeholder data contracts
+- keep logging and manifests explicit
+- avoid real source integration until the interfaces are stable

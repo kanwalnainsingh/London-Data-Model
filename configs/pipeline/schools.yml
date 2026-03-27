@@ -1,0 +1,4 @@
+pipeline_name: schools
+version: 1
+structured_output_format: json
+manifest_enabled: true
