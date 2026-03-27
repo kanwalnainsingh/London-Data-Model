@@ -1,0 +1,4 @@
+URN,EstablishmentName,Street,Town,County,Postcode,PhaseOfEducation,TypeOfEstablishment,EstablishmentStatus,Latitude,Longitude
+1001,KT19 Primary Example,1 Station Road,Epsom,Surrey,KT19 1AA,Primary,Community school,Open,51.349,-0.268
+1002,KT19 Secondary Example,2 College Road,Epsom,Surrey,KT19 1AB,Secondary,Academy converter,Open,51.360,-0.268
+1003,KT19 Independent Example,3 Private Road,Epsom,Surrey,KT19 1AC,Primary,Independent school,Open,51.352,-0.270

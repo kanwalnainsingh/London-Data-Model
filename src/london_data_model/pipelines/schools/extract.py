@@ -119,7 +119,10 @@ def _map_record(raw_record: Dict[str, Any], column_map: Dict[str, str]) -> Dict[
     for target_field, source_field in column_map.items():
         mapped[target_field] = raw_record.get(source_field)
 
-    if "address" not in mapped:
+    if "address" not in mapped and any(
+        mapped.get(field)
+        for field in ("address_line_1", "address_line_2", "address_line_3", "town", "county")
+    ):
         mapped["address"] = _build_address(mapped)
 
     if "is_open" in mapped:

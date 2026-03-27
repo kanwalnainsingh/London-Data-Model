@@ -129,6 +129,7 @@ class ExtractStageTestCase(unittest.TestCase):
 
         self.assertEqual(len(result.records), 1)
         self.assertEqual(result.records[0]["school_name"], "Sample School")
+        self.assertEqual(result.records[0]["address"], "1 Sample Road, Epsom, Surrey")
         self.assertEqual(result.records[0]["ofsted_rating_latest"], "Good")
         self.assertEqual(result.records[0]["school_urn"], "123")
 
