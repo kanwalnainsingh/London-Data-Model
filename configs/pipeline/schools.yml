@@ -2,7 +2,34 @@ pipeline_name: schools
 version: 1
 structured_output_format: json
 manifest_enabled: true
+input_mode: sample
 sample_input:
   enabled: true
   schools_path: data/raw/kt19_schools_sample.json
   ofsted_path: data/raw/kt19_ofsted_sample.json
+official_input:
+  enabled: false
+  schools_path: data/raw/gias_establishments.csv
+  schools_format: csv
+  ofsted_path: data/raw/ofsted_state_funded_schools.csv
+  ofsted_format: csv
+  merge_key: school_urn
+  schools_column_map:
+    school_urn: URN
+    school_name: EstablishmentName
+    address_line_1: Street
+    address_line_2: Locality
+    address_line_3: Address3
+    town: Town
+    county: County
+    postcode: Postcode
+    phase: PhaseOfEducation
+    establishment_type: TypeOfEstablishment
+    is_open: EstablishmentStatus
+    latitude: Latitude
+    longitude: Longitude
+  ofsted_column_map:
+    school_urn: URN
+    ofsted_rating_latest: Overall effectiveness
+    ofsted_inspection_date_latest: Inspection end date
+    ofsted_report_url: Web link

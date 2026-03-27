@@ -11,6 +11,7 @@ The first pipeline focuses on school discovery for `KT19`. It is designed to:
 - surface data quality issues instead of hiding them
 
 The project follows the execution plan in [docs/PLAN.md](docs/PLAN.md).
+Official source notes are in [docs/SOURCES.md](docs/SOURCES.md).
 
 ## Current Status
 
@@ -80,6 +81,8 @@ PYTHONPATH=src python3 -m london_data_model.cli schools run --area KT19
 
 This sample run uses placeholder JSON input files in `data/raw/` so the pipeline can execute end to end without inventing official school records.
 
+To switch to local official source files, update `input_mode` in `configs/pipeline/schools.yml` from `sample` to `official` and place the configured files under `data/raw/`.
+
 Run tests:
 
 ```bash
@@ -102,3 +105,12 @@ The checked-in sample input files are:
 - `data/raw/kt19_ofsted_sample.json`
 
 They are deliberately empty placeholders. They exist to make the KT19 pipeline run reproducible while preserving the project rule that published outputs should be based on official data.
+
+## Official Input Mode
+
+Real pipeline inputs should come from:
+
+- DfE Get Information about Schools establishments data
+- Ofsted state-funded schools inspection data
+
+The current integration is file-based and local. See [docs/SOURCES.md](docs/SOURCES.md) for the source references and caveats.

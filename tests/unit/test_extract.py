@@ -62,6 +62,80 @@ class ExtractStageTestCase(unittest.TestCase):
         self.assertEqual(result.sources[0].status, "loaded")
         self.assertEqual(result.sources[1].status, "loaded")
 
+    def test_extract_loads_and_merges_official_csv_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            schools_path = Path(tmp_dir) / "gias.csv"
+            ofsted_path = Path(tmp_dir) / "ofsted.csv"
+            schools_path.write_text(
+                "\n".join(
+                    [
+                        "URN,EstablishmentName,Street,Town,County,Postcode,PhaseOfEducation,TypeOfEstablishment,EstablishmentStatus,Latitude,Longitude",
+                        "123,Sample School,1 Sample Road,Epsom,Surrey,KT19 1AA,Primary,Community school,Open,51.4,-0.3",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            ofsted_path.write_text(
+                "\n".join(
+                    [
+                        "URN,Overall effectiveness,Inspection end date,Web link",
+                        "123,Good,2024-01-01,https://reports.ofsted.gov.uk/provider/21/123",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            context = PipelineContext(
+                pipeline_name="schools",
+                area="KT19",
+                run_id="test-run",
+                config_path=None,
+                area_config=AreaConfig(
+                    area_id="KT19",
+                    area_type="district",
+                    label="KT19",
+                    search_point_method="unresolved",
+                ),
+                pipeline_config={
+                    "version": 1,
+                    "input_mode": "official",
+                    "official_input": {
+                        "schools_path": str(schools_path),
+                        "schools_format": "csv",
+                        "ofsted_path": str(ofsted_path),
+                        "ofsted_format": "csv",
+                        "merge_key": "school_urn",
+                        "schools_column_map": {
+                            "school_urn": "URN",
+                            "school_name": "EstablishmentName",
+                            "address_line_1": "Street",
+                            "town": "Town",
+                            "county": "County",
+                            "postcode": "Postcode",
+                            "phase": "PhaseOfEducation",
+                            "establishment_type": "TypeOfEstablishment",
+                            "is_open": "EstablishmentStatus",
+                            "latitude": "Latitude",
+                            "longitude": "Longitude",
+                        },
+                        "ofsted_column_map": {
+                            "school_urn": "URN",
+                            "ofsted_rating_latest": "Overall effectiveness",
+                            "ofsted_inspection_date_latest": "Inspection end date",
+                            "ofsted_report_url": "Web link",
+                        },
+                    },
+                },
+                threshold_config=load_threshold_config(),
+            )
+
+            result = extract(context)
+
+        self.assertEqual(len(result.records), 1)
+        self.assertEqual(result.records[0]["school_name"], "Sample School")
+        self.assertEqual(result.records[0]["ofsted_rating_latest"], "Good")
+        self.assertEqual(result.records[0]["school_urn"], "123")
+
 
 if __name__ == "__main__":
     unittest.main()
