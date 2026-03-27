@@ -85,6 +85,12 @@ This sample run uses placeholder JSON input files in `data/raw/` so the pipeline
 
 To switch to local official source files, update `input_mode` in `configs/pipeline/schools.yml` from `sample` to `official` and place the configured files under `data/raw/`.
 
+You can also override the configured mode directly from the CLI:
+
+```bash
+PYTHONPATH=src python3 -m london_data_model.cli schools run --area KT19 --input-mode official
+```
+
 The current KT19 area config now uses an explicit user-supplied search point in [`configs/areas/kt19.yml`](configs/areas/kt19.yml). This is a provisional district proxy for MVP testing, not a claimed official centroid.
 
 Run tests:
@@ -144,7 +150,7 @@ To perform the first meaningful KT19 test with real data:
 5. Run:
 
 ```bash
-PYTHONPATH=src python3 -m london_data_model.cli schools run --area KT19
+PYTHONPATH=src python3 -m london_data_model.cli schools run --area KT19 --input-mode official
 ```
 
 If the files or headers do not match, the pipeline should fail fast with an explicit official-source configuration error.

@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from london_data_model.cli import build_parser, main
+from london_data_model.pipelines.schools.extract import OfficialSourceConfigError
 from london_data_model.pipelines.schools import publish as publish_module
 from london_data_model.pipelines.schools.pipeline import run as run_pipeline
 
@@ -14,11 +15,12 @@ from london_data_model.pipelines.schools.pipeline import run as run_pipeline
 class CliTestCase(unittest.TestCase):
     def test_build_parser_accepts_schools_run_command(self) -> None:
         parser = build_parser()
-        args = parser.parse_args(["schools", "run", "--area", "KT19"])
+        args = parser.parse_args(["schools", "run", "--area", "KT19", "--input-mode", "sample"])
 
         self.assertEqual(args.domain, "schools")
         self.assertEqual(args.action, "run")
         self.assertEqual(args.area, "KT19")
+        self.assertEqual(args.input_mode, "sample")
 
     def test_main_runs_stub_pipeline(self) -> None:
         with patch("sys.argv", ["ldm", "schools", "run", "--area", "KT19"]):
@@ -27,7 +29,7 @@ class CliTestCase(unittest.TestCase):
                 exit_code = main()
 
         self.assertEqual(exit_code, 0)
-        self.assertIn("Schools pipeline skeleton completed for area=KT19.", stdout.getvalue())
+        self.assertIn("Schools pipeline completed for area=KT19.", stdout.getvalue())
 
     def test_pipeline_run_writes_placeholder_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -53,6 +55,12 @@ class CliTestCase(unittest.TestCase):
         self.assertEqual(result.status, "success")
         self.assertEqual(summary_payload["area_id"], "KT19")
         self.assertEqual(summary_payload["school_count_total"], 0)
+
+    def test_pipeline_run_raises_clear_error_for_missing_official_files(self) -> None:
+        with self.assertRaises(OfficialSourceConfigError) as error:
+            run_pipeline(area="KT19", input_mode="official")
+
+        self.assertIn("Official mode requires local source files", str(error.exception))
 
 
 if __name__ == "__main__":

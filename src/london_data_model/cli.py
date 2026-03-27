@@ -23,13 +23,23 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional path to an area configuration file",
     )
+    run_parser.add_argument(
+        "--input-mode",
+        choices=("sample", "official"),
+        default=None,
+        help="Optional override for the configured input mode",
+    )
     run_parser.set_defaults(command=handle_schools_run)
 
     return parser
 
 
 def handle_schools_run(args: argparse.Namespace) -> int:
-    result = run_schools_pipeline(area=args.area, config_path=args.config)
+    result = run_schools_pipeline(
+        area=args.area,
+        config_path=args.config,
+        input_mode=args.input_mode,
+    )
     print(result.message)
     return 0 if result.status in ("stub", "success") else 1
 

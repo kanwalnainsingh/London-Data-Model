@@ -3,12 +3,14 @@
 import logging
 import uuid
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
+from london_data_model.pipelines.schools.extract import OfficialSourceConfigError
 from london_data_model.pipelines.schools.extract import extract
 from london_data_model.pipelines.schools.publish import publish
 from london_data_model.pipelines.schools.transform import transform
 from london_data_model.pipelines.schools.validate import validate
+from london_data_model.settings import PROJECT_ROOT
 from london_data_model.types import PipelineContext, PipelineResult
 from london_data_model.utils.config import (
     load_area_config,
@@ -21,11 +23,47 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(messag
 LOGGER = logging.getLogger(__name__)
 
 
-def run(area: str = "KT19", config_path: Optional[Path] = None) -> PipelineResult:
+def _resolve_input_path(raw_path: str) -> Path:
+    path = Path(raw_path)
+    if path.is_absolute():
+        return path
+    return PROJECT_ROOT / path
+
+
+def _build_pipeline_config(base_config: Dict[str, object], input_mode: Optional[str]) -> Dict[str, object]:
+    config = dict(base_config)
+    if input_mode is not None:
+        config["input_mode"] = input_mode
+    return config
+
+
+def _preflight_official_mode(pipeline_config: Dict[str, object]) -> None:
+    if str(pipeline_config.get("input_mode", "sample")).lower() != "official":
+        return
+
+    official_input = pipeline_config.get("official_input", {})
+    schools_path = _resolve_input_path(str(official_input.get("schools_path")))
+    ofsted_path = _resolve_input_path(str(official_input.get("ofsted_path")))
+
+    missing_paths = [str(path) for path in (schools_path, ofsted_path) if not path.exists()]
+    if missing_paths:
+        raise OfficialSourceConfigError(
+            "Official mode requires local source files before the run can start. Missing: {0}".format(
+                ", ".join(missing_paths)
+            )
+        )
+
+
+def run(
+    area: str = "KT19",
+    config_path: Optional[Path] = None,
+    input_mode: Optional[str] = None,
+) -> PipelineResult:
     """Run the scaffolded schools pipeline."""
     area_config = load_area_config(area=area, config_path=config_path)
-    pipeline_config = load_pipeline_config()
+    pipeline_config = _build_pipeline_config(load_pipeline_config(), input_mode=input_mode)
     threshold_config = load_threshold_config()
+    _preflight_official_mode(pipeline_config)
     context = PipelineContext(
         pipeline_name="schools",
         area=area,
@@ -58,7 +96,7 @@ def run(area: str = "KT19", config_path: Optional[Path] = None) -> PipelineResul
         area=context.area,
         status="success",
         message=(
-            "Schools pipeline skeleton completed for area={0}. "
+            "Schools pipeline completed for area={0}. "
             "Artifacts written to data/marts and data/manifests."
         ).format(context.area),
         artifacts={
