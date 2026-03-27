@@ -35,11 +35,15 @@ class CliTestCase(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir:
             marts_dir = Path(tmp_dir) / "marts"
             manifests_dir = Path(tmp_dir) / "manifests"
+            docs_data_dir = Path(tmp_dir) / "docs-data"
             marts_dir.mkdir()
             manifests_dir.mkdir()
+            docs_data_dir.mkdir()
 
             with patch.object(publish_module, "MARTS_DATA_DIR", marts_dir), patch.object(
                 publish_module, "MANIFESTS_DATA_DIR", manifests_dir
+            ), patch.object(
+                publish_module, "DOCS_DATA_DIR", docs_data_dir
             ):
                 result = run_pipeline(area="KT19")
                 output_files = result.artifacts["output_files"]
@@ -47,14 +51,22 @@ class CliTestCase(unittest.TestCase):
                 self.assertTrue(Path(output_files["records_json"]).exists())
                 self.assertTrue(Path(output_files["summary_json"]).exists())
                 self.assertTrue(Path(output_files["manifest_json"]).exists())
+                self.assertTrue(Path(output_files["public_summary_json"]).exists())
+                self.assertTrue(Path(output_files["public_manifest_json"]).exists())
+                self.assertTrue(Path(output_files["public_status_json"]).exists())
 
                 summary_payload = json.loads(
                     Path(output_files["summary_json"]).read_text(encoding="utf-8")
+                )
+                public_status_payload = json.loads(
+                    Path(output_files["public_status_json"]).read_text(encoding="utf-8")
                 )
 
         self.assertEqual(result.status, "success")
         self.assertEqual(summary_payload["area_id"], "KT19")
         self.assertEqual(summary_payload["school_count_total"], 0)
+        self.assertEqual(public_status_payload["area_id"], "KT19")
+        self.assertEqual(public_status_payload["school_count_total"], 0)
 
     def test_pipeline_run_raises_clear_error_for_missing_official_files(self) -> None:
         with self.assertRaises(OfficialSourceConfigError) as error:

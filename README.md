@@ -28,6 +28,8 @@ Business logic is partially implemented for pipeline structure, distance, qualit
 
 The remaining gap for a meaningful real-data run is not pipeline wiring. It is local official input data plus the final search-point choice for the target area.
 
+The repository also contains a static GitHub Pages view under `docs/`. That page should consume committed public artifacts from `docs/data/`, which are generated from the pipeline summary and manifest outputs. This keeps the public page inside the agreed MVP scope without publishing invented school rows.
+
 ## Project Layout
 
 ```text
@@ -154,3 +156,22 @@ PYTHONPATH=src python3 -m london_data_model.cli schools run --area KT19 --input-
 ```
 
 If the files or headers do not match, the pipeline should fail fast with an explicit official-source configuration error.
+
+## GitHub Pages
+
+The repository includes a GitHub Pages-compatible status page:
+
+- `docs/index.html`
+- `docs/data/kt19-status.json`
+- `docs/data/kt19-summary.json`
+- `docs/data/kt19-manifest.json`
+
+These `docs/data/` artifacts are a public mirror of the current published summary and manifest for the KT19 pipeline. They are intended for static page consumption only.
+
+The public manifest is intentionally sanitized for GitHub Pages. Internal local filesystem paths remain in `data/manifests/`, not in `docs/data/`.
+
+If Pages is enabled for the `main` branch `docs/` folder, the public URL should be:
+
+```text
+https://kanwalnainsingh.github.io/London-Data-Model/
+```

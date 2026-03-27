@@ -197,6 +197,13 @@
         color: var(--muted);
       }
 
+      .tiny-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
       @media (max-width: 900px) {
         .span-4,
         .span-5,
@@ -254,7 +261,7 @@
 
         <article class="card span-4">
           <h2>Current Blocker</h2>
-          <div class="status-warn">
+          <div id="blocker-box" class="status-warn">
             Real school rows are not committed yet because the repo does not
             contain the required local official source files.
           </div>
@@ -268,23 +275,26 @@
           <h2>Current Data State</h2>
           <div class="grid" style="margin-top: 8px;">
             <div class="metric span-4">
-              <strong>0</strong>
-              <span>checked-in real official school rows</span>
+              <strong id="metric-school-count">0</strong>
+              <span>published school rows in current artifact</span>
             </div>
             <div class="metric span-4">
-              <strong>2</strong>
-              <span>placeholder sample input files</span>
+              <strong id="metric-input-mode">sample</strong>
+              <span>current committed pipeline input mode</span>
             </div>
             <div class="metric span-4">
-              <strong>2</strong>
-              <span>official local files still needed</span>
+              <strong id="metric-generated-at">pending</strong>
+              <span>latest committed artifact generation time</span>
             </div>
           </div>
-          <div class="status-good">
-            The sample-mode pipeline runs end to end and writes marts plus a
-            manifest. Official mode is implemented and now fails early with a
-            clear error if the required local files are missing.
+          <div id="data-state-box" class="status-good">
+            The page reads a committed JSON snapshot generated from the current
+            summary and manifest artifacts under <code>docs/data/</code>.
           </div>
+          <p class="small">
+            Snapshot source:
+            <code id="status-path">docs/data/kt19-status.json</code>
+          </p>
         </article>
 
         <article class="card span-5">
@@ -294,14 +304,39 @@
             district proxy for MVP testing.
           </p>
           <ul>
-            <li><strong>Method:</strong> user_supplied</li>
-            <li><strong>Latitude:</strong> 51.3490</li>
-            <li><strong>Longitude:</strong> -0.2680</li>
+            <li><strong>Method:</strong> <span id="search-point-method">user_supplied</span></li>
+            <li><strong>Latitude:</strong> <span id="search-point-latitude">51.3490</span></li>
+            <li><strong>Longitude:</strong> <span id="search-point-longitude">-0.2680</span></li>
           </ul>
           <p class="small">
             This is not asserted as an official centroid. It is a pragmatic
             search point so the MVP can compute distances once official school
             files are present.
+          </p>
+        </article>
+
+        <article class="card span-12">
+          <h2>Committed Public Snapshot</h2>
+          <div class="grid" style="margin-top: 8px;">
+            <div class="metric span-4">
+              <div class="tiny-label">Run ID</div>
+              <strong id="run-id">pending</strong>
+              <span>current committed pipeline run identifier</span>
+            </div>
+            <div class="metric span-4">
+              <div class="tiny-label">Quality Counts</div>
+              <strong id="quality-counts">0 / 0 / 0</strong>
+              <span>complete / partial / poor</span>
+            </div>
+            <div class="metric span-4">
+              <div class="tiny-label">Missing Ofsted</div>
+              <strong id="missing-ofsted-count">0</strong>
+              <span>records currently missing latest Ofsted context</span>
+            </div>
+          </div>
+          <p id="snapshot-note" class="small">
+            This snapshot is intentionally narrow: it publishes current repo
+            state, not fabricated school data.
           </p>
         </article>
 
@@ -351,5 +386,80 @@
         </article>
       </section>
     </main>
+    <script>
+      const statusUrl = "./data/kt19-status.json";
+
+      function formatGeneratedAt(value) {
+        if (!value) {
+          return "pending";
+        }
+
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) {
+          return value;
+        }
+
+        return parsed.toISOString().slice(0, 16).replace("T", " ");
+      }
+
+      function updateStatus(payload) {
+        const schoolCount = payload.school_count_total ?? 0;
+        const inputMode = payload.input_mode ?? "sample";
+        const generatedAt = formatGeneratedAt(payload.generated_at);
+        const qualityCounts = payload.quality_counts ?? {};
+        const searchPoint = payload.search_point ?? {};
+
+        document.getElementById("metric-school-count").textContent = String(schoolCount);
+        document.getElementById("metric-input-mode").textContent = inputMode;
+        document.getElementById("metric-generated-at").textContent = generatedAt;
+        document.getElementById("run-id").textContent = payload.run_id ?? "pending";
+        document.getElementById("quality-counts").textContent =
+          `${qualityCounts.complete ?? 0} / ${qualityCounts.partial ?? 0} / ${qualityCounts.poor ?? 0}`;
+        document.getElementById("missing-ofsted-count").textContent = String(
+          payload.missing_ofsted_count ?? 0
+        );
+        document.getElementById("search-point-method").textContent =
+          payload.search_point_method ?? "unresolved";
+        document.getElementById("search-point-latitude").textContent =
+          searchPoint.latitude ?? "unresolved";
+        document.getElementById("search-point-longitude").textContent =
+          searchPoint.longitude ?? "unresolved";
+
+        const blockerBox = document.getElementById("blocker-box");
+        const dataStateBox = document.getElementById("data-state-box");
+        const snapshotNote = document.getElementById("snapshot-note");
+
+        if (schoolCount > 0 && inputMode === "official") {
+          blockerBox.textContent =
+            "The current committed artifact contains published KT19 school rows from an official-mode run.";
+          blockerBox.className = "status-good";
+        } else {
+          blockerBox.textContent =
+            "Real school rows are not committed yet because the repo does not contain the required local official source files.";
+          blockerBox.className = "status-warn";
+        }
+
+        dataStateBox.innerHTML =
+          "The page reads a committed JSON snapshot generated from the current summary and manifest artifacts under <code>docs/data/</code>.";
+        snapshotNote.textContent =
+          schoolCount > 0
+            ? "This page is showing the latest committed KT19 artifact state."
+            : "This snapshot is intentionally narrow: it publishes current repo state, not fabricated school data.";
+      }
+
+      fetch(statusUrl)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Failed to load ${statusUrl}`);
+          }
+          return response.json();
+        })
+        .then(updateStatus)
+        .catch((error) => {
+          document.getElementById("data-state-box").textContent =
+            "The public snapshot could not be loaded yet. The page is showing the static fallback state.";
+          document.getElementById("snapshot-note").textContent = error.message;
+        });
+    </script>
   </body>
 </html>

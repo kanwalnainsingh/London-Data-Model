@@ -1,0 +1,30 @@
+{
+  "run_id": "2d375b0f0c02",
+  "pipeline_name": "schools",
+  "pipeline_version": 1,
+  "area_id": "KT19",
+  "search_point_method": "user_supplied",
+  "search_point": {
+    "latitude": 51.349,
+    "longitude": -0.268
+  },
+  "record_counts": {
+    "published": 0
+  },
+  "quality_counts": {
+    "complete": 0,
+    "partial": 0,
+    "poor": 0
+  },
+  "notes": [
+    "Extraction currently loads checked-in sample input files only.",
+    "Sample input files are placeholders for pipeline execution and documentation.",
+    "Distance, accessibility band, and proximity score are now applied when coordinates are present.",
+    "Transform applies V1 scope filters for mainstream, open primary/secondary/all-through schools.",
+    "Validation applies deterministic data quality flags and status mapping."
+  ],
+  "public_artifacts": {
+    "status_json": "./data/kt19-status.json",
+    "summary_json": "./data/kt19-summary.json"
+  }
+}

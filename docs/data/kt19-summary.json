@@ -1,0 +1,13 @@
+{
+  "area_id": "KT19",
+  "school_count_total": 0,
+  "school_count_by_phase": {},
+  "school_count_by_accessibility_band": {},
+  "school_count_by_quality_status": {
+    "complete": 0,
+    "partial": 0,
+    "poor": 0
+  },
+  "missing_ofsted_count": 0,
+  "generated_at": "2026-03-27T23:26:51.242057+00:00"
+}
