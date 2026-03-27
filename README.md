@@ -24,7 +24,7 @@ The repository currently contains the initial scaffold:
 - local data output folders
 - smoke tests
 
-Business logic is partially implemented for pipeline structure, distance, and quality rules. Real official source integration is not implemented yet.
+Business logic is partially implemented for pipeline structure, distance, quality rules, and local official-source integration.
 
 ## Project Layout
 

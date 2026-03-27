@@ -14,6 +14,7 @@ This document is the source of truth for:
 - Product scope
 - Data contracts
 - Pipeline architecture
+- Multi-agent delivery boundaries
 - Delivery phases
 - Guardrails against guesswork and hallucination
 
@@ -84,6 +85,7 @@ V2 must remain separate from V1. V1 should be designed so these fields can be ad
 - Full traceability from outputs back to source files
 - No database in V1
 - Keep the initial implementation simple and local-file based
+- Multi-agent work is allowed only as a delivery method, not as a runtime product feature
 
 ## 6. Scope
 
@@ -133,6 +135,7 @@ These assumptions are acceptable for scaffolding and early implementation, but m
 - Output artifacts will live under `data/`.
 - Search areas will initially be configured rather than entered through a UI.
 - Official school and inspection data will be stored under `data/raw/` before transformation.
+- Delivery may be split across specialised agents, but runtime execution remains one local CLI, one repository, and one linear pipeline.
 
 ## 9. Open Decisions That Must Be Controlled Explicitly
 
@@ -396,7 +399,7 @@ Recommended V1 direction:
 
 Until implemented, treat this as an explicit TODO with a documented formula.
 
-## 15. Architecture
+## 15. Runtime Architecture And Delivery Topology
 
 The repository should follow this structure:
 
@@ -438,7 +441,66 @@ tests/
 
 This keeps the Python package separate from raw folder names and gives a stable import path.
 
-## 16. Pipeline Responsibilities
+### 15.1 Multi-Agent Delivery Topology
+
+The MVP should use a constrained multi-agent delivery model with explicit file ownership and one integration path.
+
+Allowed agent roles:
+
+- `spec-guardrail-agent`
+- `contracts-agent`
+- `runtime-orchestration-agent`
+- `source-intake-agent`
+- `school-normalization-agent`
+- `quality-policy-agent`
+- `artifact-publisher-agent`
+
+These roles are delivery lanes only. They are not runtime services and they must not change the MVP product boundary.
+
+### 15.2 Agent Ownership
+
+- `spec-guardrail-agent`
+  Owns: `docs/PLAN.md`, `docs/SOURCES.md`
+  Responsible for: scope protection, source-policy decisions, V1/V2 guardrails
+  Must not own: pipeline implementation files
+
+- `contracts-agent`
+  Owns: `src/london_data_model/types.py`
+  Responsible for: shared contracts, schema fields, interface compatibility
+  Must not own: extraction, transform, validation, publishing logic
+
+- `runtime-orchestration-agent`
+  Owns: `src/london_data_model/cli.py`, `src/london_data_model/pipelines/schools/pipeline.py`, `src/london_data_model/settings.py`, `src/london_data_model/utils/config.py`
+  Responsible for: pipeline sequencing, config loading, run context creation, CLI behavior
+  Must not own: source-field mapping, school scope logic, quality policy
+
+- `source-intake-agent`
+  Owns: `src/london_data_model/pipelines/schools/extract.py`
+  Responsible for: local source loading, file validation, column mapping, source merge behavior
+  Must not own: school eligibility rules, distance logic, publishing
+
+- `school-normalization-agent`
+  Owns: `src/london_data_model/pipelines/schools/transform.py`
+  Responsible for: canonical school records, scope filtering, distance, accessibility, proximity score
+  Must not own: source-file loading, data-quality policy, manifest writing
+
+- `quality-policy-agent`
+  Owns: `src/london_data_model/pipelines/schools/validate.py`
+  Responsible for: `data_quality_flags`, `data_quality_status`, quality summaries
+  Must not own: scope filtering, source merge logic, output layout
+
+- `artifact-publisher-agent`
+  Owns: `src/london_data_model/pipelines/schools/publish.py`
+  Responsible for: stable output artifacts, summaries, manifests
+  Must not own: source ingestion, school-domain rules
+
+### 15.3 Coordination Rule
+
+- `pipeline.py` is the only cross-stage coordinator.
+- Agents coordinate through files, tests, manifests, and documented handoffs.
+- No agent should introduce a runtime multi-agent system for V1.
+
+## 16. Module Ownership And Handoff Responsibilities
 
 ### 16.1 `extract.py`
 
@@ -448,10 +510,15 @@ Responsibilities:
 - Parse source files into minimally cleaned records
 - Attach source metadata needed for traceability
 
+Primary owner:
+
+- `source-intake-agent`
+
 Must not:
 
 - Apply business scoring
 - Drop records for missing optional fields
+- Edit transform, validation, or publishing rules without an explicit handoff
 
 ### 16.2 `transform.py`
 
@@ -465,9 +532,15 @@ Responsibilities:
 - Compute `proximity_score`
 - Attach Ofsted fields
 
+Primary owner:
+
+- `school-normalization-agent`
+
 Must not:
 
 - Publish files
+- Load source files directly
+- Change quality policy without an explicit handoff
 
 ### 16.3 `validate.py`
 
@@ -478,9 +551,15 @@ Responsibilities:
 - Assign `data_quality_status`
 - Produce validation summary counts
 
+Primary owner:
+
+- `quality-policy-agent`
+
 Must not:
 
 - Remove records silently
+- Reinterpret source-file schemas
+- Change runtime orchestration
 
 ### 16.4 `publish.py`
 
@@ -490,6 +569,10 @@ Responsibilities:
 - Write summary JSON
 - Write manifest JSON to `data/manifests/`
 
+Primary owner:
+
+- `artifact-publisher-agent`
+
 ### 16.5 `pipeline.py`
 
 Responsibilities:
@@ -498,6 +581,14 @@ Responsibilities:
 - Handle run configuration
 - Emit high-level logging
 - Return a run result or exit code
+
+Primary owner:
+
+- `runtime-orchestration-agent`
+
+Must not:
+
+- Duplicate stage-specific business logic
 
 ## 17. CLI Plan
 
@@ -543,6 +634,16 @@ Source config should define:
 - Format
 - Version metadata where available
 
+### 18.4 Delivery Conventions
+
+Delivery should stay issue-driven:
+
+- Create the GitHub issue first
+- Put the task goal, scope, constraints, acceptance criteria, and plan in the issue
+- Implement only after the issue exists
+- Push changes before closing the issue
+- Close the issue with verification details and commit reference
+
 ## 19. Manifest Requirements
 
 Each run must emit a manifest JSON that includes at minimum:
@@ -562,6 +663,8 @@ Each run must emit a manifest JSON that includes at minimum:
 - `notes`
 
 This is required for traceability and later debugging.
+
+Optional delivery-trace fields may be added later, but the manifest must remain a product artifact first, not a workflow engine.
 
 ## 20. Summary Output Requirements
 
@@ -647,9 +750,48 @@ Deliver:
 - Reserved schema extensions
 - Additional docs, not implementation
 
-## 22. Testing Plan
+Each phase must end with integration into the single KT19 pipeline before the next delivery slice begins.
 
-### 22.1 Unit Tests
+## 22. Multi-Agent Delivery Model
+
+The multi-agent model for this repository should stay inside the agreed MVP scope.
+
+### 22.1 Allowed Roles
+
+- `spec-guardrail-agent`
+- `contracts-agent`
+- `runtime-orchestration-agent`
+- `source-intake-agent`
+- `school-normalization-agent`
+- `quality-policy-agent`
+- `artifact-publisher-agent`
+
+### 22.2 Handoff Artifacts
+
+Each agent handoff should use one or more of:
+
+- updated code in owned files
+- focused tests for the owned module
+- config changes with explicit defaults
+- doc updates for scope or source policy
+- manifests or summaries when output shape changes
+
+### 22.3 Integration Cadence
+
+- Agents may work in parallel only when write ownership does not overlap
+- Shared contract changes should be coordinated before stage-specific changes land
+- The integration path remains linear: `extract -> transform -> validate -> publish`
+- Human review should confirm that each handoff stays within KT19 MVP scope
+
+### 22.4 Explicit Limits
+
+- No runtime multi-agent orchestration in V1
+- No future-platform agents for non-MVP features
+- No expansion into admissions or catchment implementation under this delivery model
+
+## 23. Testing Plan
+
+### 23.1 Unit Tests
 
 Required for:
 
@@ -660,7 +802,9 @@ Required for:
 - Status derivation
 - Phase mapping
 
-### 22.2 Integration Tests
+Each agent-owned module should ship with focused tests for its own rules.
+
+### 23.2 Integration Tests
 
 Required for:
 
@@ -668,13 +812,15 @@ Required for:
 - Output file creation
 - Summary and manifest generation
 
-### 22.3 Golden Fixture Tests
+The integration path should be owned by the `runtime-orchestration-agent`, with regression checks spanning the full KT19 flow.
+
+### 23.3 Golden Fixture Tests
 
 Recommended:
 
 - A small fixed school fixture with known expected output for regression control
 
-## 23. Logging Plan
+## 24. Logging Plan
 
 Logging should be minimal, structured, and useful.
 
@@ -689,7 +835,14 @@ Log at least:
 
 Avoid noisy per-record logging in normal runs.
 
-## 24. Error Handling Plan
+During development, logs should also make stage handoffs visible:
+
+- extract complete
+- transform complete
+- validate complete
+- publish complete
+
+## 25. Error Handling Plan
 
 The pipeline should fail fast for:
 
@@ -704,7 +857,7 @@ The pipeline should not fail fast for:
 
 Those should be flagged instead.
 
-## 25. Performance Plan
+## 26. Performance Plan
 
 Performance is not a V1 priority beyond reasonable local execution.
 
@@ -715,29 +868,33 @@ V1 targets:
 - Keep dependencies light
 - Prefer clarity over micro-optimisation
 
-## 26. Risks
+## 27. Risks
 
-### 26.1 Product Risks
+### 27.1 Product Risks
 
 - Ambiguous definition of the search point
 - Overstating what accessibility implies
 - Letting `proximity_score` look more authoritative than it is
 
-### 26.2 Data Risks
+### 27.2 Data Risks
 
 - Source schema drift
 - Missing or delayed Ofsted fields
 - Difficulty mapping establishment types cleanly
 
-### 26.3 Engineering Risks
+### 27.3 Engineering Risks
 
 - Over-engineering before the first usable output exists
 - Coupling source-specific assumptions too tightly into transforms
 - Adding parquet and heavyweight dependencies too early
+- Merge conflicts across adjacent modules
+- Inconsistent assumptions across agents
+- Premature abstraction caused by parallel work
+- Unclear ownership at integration boundaries
 
-## 27. Guardrails For Codex
+## 28. Guardrails For Agents
 
-Codex should follow these rules on this repository:
+Agents should follow these rules on this repository:
 
 - Follow this plan strictly
 - Keep code minimal and legible
@@ -748,12 +905,20 @@ Codex should follow these rules on this repository:
 - Keep high-risk assumptions in config or docs
 - Prefer explicit schemas and small functions
 - Add tests when logic becomes non-trivial
+- Stay within assigned file ownership unless an integration handoff requires otherwise
+- Document assumptions at handoff points
+- Avoid cross-cutting refactors unless explicitly requested
+- Preserve the issue-first workflow for implementation tasks
 
-## 28. Immediate Next Tasks
+## 29. MVP Work Packages
 
-### Task 1
+### Work Package 1: Scaffold
 
 Scaffold the project from this plan.
+
+Primary owner:
+
+- `runtime-orchestration-agent`
 
 Requirements:
 
@@ -776,9 +941,20 @@ Acceptance criteria:
 - Folder structure matches this plan
 - CLI runs as a stub
 
-### Task 2
+Integration checkpoint:
+
+- The scaffold is merged into the single KT19 pipeline baseline
+
+### Work Package 2: Pipeline Skeleton
 
 Implement school pipeline skeleton.
+
+Primary owners:
+
+- `contracts-agent`
+- `runtime-orchestration-agent`
+- `source-intake-agent`
+- `artifact-publisher-agent`
 
 Requirements:
 
@@ -792,9 +968,17 @@ Do not:
 - Fetch real data yet
 - Implement scoring yet
 
-### Task 3
+Integration checkpoint:
+
+- The pipeline runs end to end with explicit stage interfaces
+
+### Work Package 3: Distance and Accessibility
 
 Add distance and accessibility logic.
+
+Primary owner:
+
+- `school-normalization-agent`
 
 Requirements:
 
@@ -804,9 +988,17 @@ Requirements:
 - Use config for thresholds
 - Add unit tests
 
-### Task 4
+Integration checkpoint:
+
+- Distance-derived fields appear in the KT19 pipeline without changing scope
+
+### Work Package 4: Data Quality
 
 Add data quality flags.
+
+Primary owner:
+
+- `quality-policy-agent`
 
 Requirements:
 
@@ -814,9 +1006,19 @@ Requirements:
 - Implement `data_quality_flags`
 - Do not drop records
 
-### Task 5
+Integration checkpoint:
+
+- Quality summaries appear in pipeline artifacts and remain deterministic
+
+### Work Package 5: KT19 Sample Run
 
 Add a `KT19` sample run.
+
+Primary owners:
+
+- `source-intake-agent`
+- `artifact-publisher-agent`
+- `runtime-orchestration-agent`
 
 Requirements:
 
@@ -824,6 +1026,10 @@ Requirements:
 - Run pipeline
 - Generate outputs in `data/marts/`
 
-## 29. Golden Rule
+Integration checkpoint:
+
+- A reproducible KT19 run is documented and merged into the single MVP path
+
+## 30. Golden Rule
 
 Better to be correct and simple than clever and wrong.
