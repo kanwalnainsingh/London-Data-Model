@@ -1,20 +1,23 @@
 """Transform stage for the schools pipeline."""
 
-from __future__ import annotations
-
 import logging
-from typing import Any, Dict
 
-from london_data_model.types import PipelineContext
+from london_data_model.types import ExtractResult, PipelineContext, TransformResult
 
 
 LOGGER = logging.getLogger(__name__)
 
 
-def transform(extracted: Dict[str, Any], context: PipelineContext) -> Dict[str, Any]:
+def transform(extracted: ExtractResult, context: PipelineContext) -> TransformResult:
     """Standardise records and apply derived fields."""
-    LOGGER.info("Transform stub invoked for area=%s", context.area)
-    return {
-        "records": [],
-        "metadata": extracted,
-    }
+    LOGGER.info(
+        "Starting transform stage for area=%s with %s extracted records",
+        context.area,
+        len(extracted.records),
+    )
+
+    notes = list(extracted.notes)
+    notes.append("No school records transformed yet; business rules remain stubbed.")
+
+    LOGGER.info("Transform stage completed with %s transformed records", 0)
+    return TransformResult(records=[], excluded_record_count=0, notes=notes)

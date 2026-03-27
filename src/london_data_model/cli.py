@@ -31,7 +31,7 @@ def build_parser() -> argparse.ArgumentParser:
 def handle_schools_run(args: argparse.Namespace) -> int:
     result = run_schools_pipeline(area=args.area, config_path=args.config)
     print(result.message)
-    return 0 if result.status == "stub" else 1
+    return 0 if result.status in ("stub", "success") else 1
 
 
 def main() -> int:

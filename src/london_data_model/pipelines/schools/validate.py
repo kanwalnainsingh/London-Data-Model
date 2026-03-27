@@ -1,24 +1,32 @@
 """Validation stage for the schools pipeline."""
 
-from __future__ import annotations
-
 import logging
-from typing import Any, Dict
 
-from london_data_model.types import PipelineContext
+from london_data_model.types import PipelineContext, TransformResult, ValidateResult
 
 
 LOGGER = logging.getLogger(__name__)
 
 
-def validate(transformed: Dict[str, Any], context: PipelineContext) -> Dict[str, Any]:
+def validate(transformed: TransformResult, context: PipelineContext) -> ValidateResult:
     """Validate transformed records and assign quality metadata."""
-    LOGGER.info("Validate stub invoked for area=%s", context.area)
-    return {
-        "records": transformed.get("records", []),
-        "quality_summary": {
-            "complete": 0,
-            "partial": 0,
-            "poor": 0,
-        },
+    LOGGER.info(
+        "Starting validate stage for area=%s with %s transformed records",
+        context.area,
+        len(transformed.records),
+    )
+
+    quality_summary = {
+        "complete": 0,
+        "partial": len(transformed.records),
+        "poor": 0,
     }
+    notes = list(transformed.notes)
+    notes.append("Validation placeholders applied; detailed quality rules come in Task 4.")
+
+    LOGGER.info("Validate stage completed with quality_summary=%s", quality_summary)
+    return ValidateResult(
+        records=list(transformed.records),
+        quality_summary=quality_summary,
+        notes=notes,
+    )
