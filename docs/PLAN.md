@@ -153,6 +153,13 @@ The implementation must explicitly support one of these modes:
 
 For V1, keep this as configuration and record the chosen method in the manifest.
 
+KT19 MVP decision:
+
+- Use explicit configured user-supplied coordinates
+- Treat them as the repeatable district-level KT19 search point for MVP runs
+- Label them as configured coordinates in the manifest
+- Do not represent them as an official centroid
+
 ### 9.2 Official Source Selection
 
 The implementation must document and pin the official source used for:

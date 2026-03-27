@@ -93,7 +93,7 @@ You can also override the configured mode directly from the CLI:
 PYTHONPATH=src python3 -m london_data_model.cli schools run --area KT19 --input-mode official
 ```
 
-The current KT19 area config now uses an explicit user-supplied search point in [`configs/areas/kt19.yml`](configs/areas/kt19.yml). This is a provisional district proxy for MVP testing, not a claimed official centroid.
+The current KT19 area config uses explicit configured coordinates in [`configs/areas/kt19.yml`](configs/areas/kt19.yml). For the MVP, this is the chosen repeatable district-level search point method. It is intentionally labeled as configured user-supplied coordinates, not as an asserted official centroid.
 
 Run tests:
 

@@ -50,6 +50,7 @@ def _build_public_status_payload(
         "missing_ofsted_count": summary_payload["missing_ofsted_count"],
         "search_point_method": manifest_payload["search_point_method"],
         "search_point": manifest_payload["search_point"],
+        "search_point_metadata": manifest_payload["search_point_metadata"],
         "notes": manifest_payload["notes"],
     }
 
@@ -62,6 +63,7 @@ def _build_public_manifest_payload(manifest_payload: dict) -> dict:
         "area_id": manifest_payload["area_id"],
         "search_point_method": manifest_payload["search_point_method"],
         "search_point": manifest_payload["search_point"],
+        "search_point_metadata": manifest_payload["search_point_metadata"],
         "record_counts": manifest_payload["record_counts"],
         "quality_counts": manifest_payload["quality_counts"],
         "notes": manifest_payload["notes"],
@@ -115,6 +117,12 @@ def publish(validated: ValidateResult, context: PipelineContext) -> PublishResul
         "search_point": {
             "latitude": context.area_config.latitude,
             "longitude": context.area_config.longitude,
+        },
+        "search_point_metadata": {
+            "name": context.area_config.search_point_name,
+            "source_type": context.area_config.search_point_source_type,
+            "source_reference": context.area_config.search_point_source_reference,
+            "notes": context.area_config.search_point_notes,
         },
         "output_files": {
             "csv": str(csv_path),

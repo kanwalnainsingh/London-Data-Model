@@ -1,5 +1,5 @@
 {
-  "run_id": "2d375b0f0c02",
+  "run_id": "1472fe7c523f",
   "pipeline_name": "schools",
   "pipeline_version": 1,
   "area_id": "KT19",
@@ -7,6 +7,12 @@
   "search_point": {
     "latitude": 51.349,
     "longitude": -0.268
+  },
+  "search_point_metadata": {
+    "name": "KT19 configured district-level search point",
+    "source_type": "configured_coordinates",
+    "source_reference": "repository_config",
+    "notes": "Explicit user-supplied coordinates used as the repeatable district-level KT19 search point for MVP runs. Not asserted as an official centroid."
   },
   "record_counts": {
     "published": 0

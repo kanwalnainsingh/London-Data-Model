@@ -32,6 +32,10 @@ class AreaConfig:
     area_type: str
     label: str
     search_point_method: str
+    search_point_name: Optional[str] = None
+    search_point_source_type: Optional[str] = None
+    search_point_source_reference: Optional[str] = None
+    search_point_notes: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
 

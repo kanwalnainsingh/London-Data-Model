@@ -58,15 +58,29 @@ class CliTestCase(unittest.TestCase):
                 summary_payload = json.loads(
                     Path(output_files["summary_json"]).read_text(encoding="utf-8")
                 )
+                manifest_payload = json.loads(
+                    Path(output_files["manifest_json"]).read_text(encoding="utf-8")
+                )
                 public_status_payload = json.loads(
                     Path(output_files["public_status_json"]).read_text(encoding="utf-8")
+                )
+                public_manifest_payload = json.loads(
+                    Path(output_files["public_manifest_json"]).read_text(encoding="utf-8")
                 )
 
         self.assertEqual(result.status, "success")
         self.assertEqual(summary_payload["area_id"], "KT19")
         self.assertEqual(summary_payload["school_count_total"], 0)
+        self.assertEqual(
+            manifest_payload["search_point_metadata"]["source_type"],
+            "configured_coordinates",
+        )
         self.assertEqual(public_status_payload["area_id"], "KT19")
         self.assertEqual(public_status_payload["school_count_total"], 0)
+        self.assertEqual(
+            public_manifest_payload["search_point_metadata"]["source_type"],
+            "configured_coordinates",
+        )
 
     def test_pipeline_run_raises_clear_error_for_missing_official_files(self) -> None:
         with self.assertRaises(OfficialSourceConfigError) as error:

@@ -71,6 +71,10 @@ def load_area_config(area: str, config_path: Optional[Path] = None) -> AreaConfi
         area_type=str(data["area_type"]),
         label=str(data["label"]),
         search_point_method=str(data["search_point_method"]),
+        search_point_name=data.get("search_point_name"),
+        search_point_source_type=data.get("search_point_source_type"),
+        search_point_source_reference=data.get("search_point_source_reference"),
+        search_point_notes=data.get("search_point_notes"),
         latitude=data.get("latitude"),
         longitude=data.get("longitude"),
     )

@@ -41,4 +41,6 @@ The pipeline currently supports:
 - The column maps in [`configs/pipeline/schools.yml`](../configs/pipeline/schools.yml) are starter defaults and may need adjusting to the exact headers in the current downloads.
 - The official-source integration is local-file based by design. The normal pipeline does not fetch files live from the network.
 - If the official schools file does not provide latitude and longitude directly, the pipeline will currently leave those fields empty rather than invent values.
-- The current KT19 search point in [`configs/areas/kt19.yml`](../configs/areas/kt19.yml) is a provisional user-supplied district proxy for MVP testing. It should not be treated as an asserted official centroid.
+- The current KT19 search point in [`configs/areas/kt19.yml`](../configs/areas/kt19.yml) is the chosen MVP method: explicit configured user-supplied coordinates for repeatable district-level runs.
+- Those coordinates are documented in config and mirrored into the manifest as search-point metadata.
+- They should not be treated as an asserted official centroid.
