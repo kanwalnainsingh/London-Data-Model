@@ -41,10 +41,12 @@ def _publish_london_index(
     borough_results: List[Tuple[AreaConfig, PublishResult, ValidateResult]],
     pipeline_config: Dict[str, Any],
 ) -> None:
-    """Write London-wide index JSON to docs/data/ for the dashboard."""
+    """Write London-wide index and combined schools JSON to docs/data/."""
     areas = []
     total_schools = 0
     total_quality: Dict[str, int] = {"complete": 0, "partial": 0, "poor": 0}
+    # Deduplicate schools across borough runs by URN; keep the closest entry.
+    schools_by_urn: Dict[str, Any] = {}
 
     for borough_config, published, validated in borough_results:
         areas.append({
@@ -60,6 +62,21 @@ def _publish_london_index(
         for key in total_quality:
             total_quality[key] += validated.quality_summary.get(key, 0)
 
+        for record in validated.records:
+            d = record.to_dict()
+            urn = d.get("school_urn", "")
+            existing = schools_by_urn.get(urn)
+            if existing is None:
+                schools_by_urn[urn] = d
+            else:
+                # Keep the entry with the smaller distance (school closer to its borough centre)
+                existing_dist = existing.get("distance_km") or float("inf")
+                new_dist = d.get("distance_km") or float("inf")
+                if new_dist < existing_dist:
+                    schools_by_urn[urn] = d
+
+    DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
+
     index_payload = {
         "region_id": "london",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -69,8 +86,6 @@ def _publish_london_index(
         "quality_counts": total_quality,
         "areas": sorted(areas, key=lambda a: a["area_id"]),
     }
-
-    DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
     index_path = DOCS_DATA_DIR / "london-index.json"
     index_path.write_text(json.dumps(index_payload, indent=2), encoding="utf-8")
     LOGGER.info(
@@ -78,6 +93,17 @@ def _publish_london_index(
         index_path,
         len(areas),
         total_schools,
+    )
+
+    combined_schools = sorted(schools_by_urn.values(), key=lambda s: s.get("school_name", ""))
+    schools_path = DOCS_DATA_DIR / "london-schools.json"
+    schools_path.write_text(
+        json.dumps(combined_schools, separators=(",", ":")), encoding="utf-8"
+    )
+    LOGGER.info(
+        "Published London schools: %s (%d unique schools)",
+        schools_path,
+        len(combined_schools),
     )
 
 

@@ -819,21 +819,30 @@
         }
 
         filterEl.style.display = "";
+        const sourceLabel = (_schoolsCache && _schoolsCache._sourceUrl && _schoolsCache._sourceUrl.includes("london"))
+          ? "London-wide dataset"
+          : "KT19 pilot dataset";
         resultsEl.innerHTML = `
           <p class="small" style="margin-bottom:12px;">
             Showing <strong>${filtered.length}</strong> school${filtered.length !== 1 ? "s" : ""}
-            near <strong>${postcode.toUpperCase()}</strong>, sorted by distance.
+            near <strong>${postcode.toUpperCase()}</strong>, sorted by distance
+            <span style="color:var(--muted);">(${sourceLabel})</span>.
           </p>
           <div class="school-grid">${filtered.map(renderSchoolCard).join("")}</div>`;
       }
 
-      async function loadSchools(areaId) {
+      async function loadSchools() {
         if (_schoolsCache) return _schoolsCache;
-        const url = "./data/" + areaId.toLowerCase() + "-schools.json";
-        const r = await fetch(url);
-        if (!r.ok) throw new Error("School data not yet published. Run the pipeline first.");
-        _schoolsCache = await r.json();
-        return _schoolsCache;
+        // Prefer the full London dataset; fall back to KT19 pilot
+        for (const url of ["./data/london-schools.json", "./data/kt19-schools.json"]) {
+          const r = await fetch(url);
+          if (r.ok) {
+            _schoolsCache = await r.json();
+            _schoolsCache._sourceUrl = url;
+            return _schoolsCache;
+          }
+        }
+        throw new Error("School data not yet published. Run the pipeline first.");
       }
 
       async function doSearch() {
@@ -861,7 +870,7 @@
           const { latitude, longitude } = result;
 
           // 2. Load school data (cached after first call)
-          const schools = await loadSchools("kt19");
+          const schools = await loadSchools();
 
           // 3. Calculate distances and sort
           const withDist = schools

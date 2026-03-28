@@ -1,40 +1,443 @@
 {
   "region_id": "london",
-  "generated_at": "2026-03-28T07:05:41.136982+00:00",
-  "input_mode": "sample",
-  "borough_count": 2,
-  "school_count_total": 0,
+  "generated_at": "2026-03-28T13:52:21.021218+00:00",
+  "input_mode": "official",
+  "borough_count": 33,
+  "school_count_total": 2129,
   "quality_counts": {
-    "complete": 0,
-    "partial": 0,
+    "complete": 2057,
+    "partial": 72,
     "poor": 0
   },
   "areas": [
+    {
+      "area_id": "barking-and-dagenham",
+      "label": "London Borough of Barking and Dagenham",
+      "area_type": "borough",
+      "la_code": 301,
+      "school_count": 56,
+      "quality_counts": {
+        "complete": 55,
+        "partial": 1,
+        "poor": 0
+      },
+      "status_url": "./data/barking-and-dagenham-status.json"
+    },
     {
       "area_id": "barnet",
       "label": "London Borough of Barnet",
       "area_type": "borough",
       "la_code": 302,
-      "school_count": 0,
+      "school_count": 81,
       "quality_counts": {
-        "complete": 0,
-        "partial": 0,
+        "complete": 77,
+        "partial": 4,
         "poor": 0
       },
       "status_url": "./data/barnet-status.json"
+    },
+    {
+      "area_id": "bexley",
+      "label": "London Borough of Bexley",
+      "area_type": "borough",
+      "la_code": 303,
+      "school_count": 75,
+      "quality_counts": {
+        "complete": 72,
+        "partial": 3,
+        "poor": 0
+      },
+      "status_url": "./data/bexley-status.json"
+    },
+    {
+      "area_id": "brent",
+      "label": "London Borough of Brent",
+      "area_type": "borough",
+      "la_code": 304,
+      "school_count": 72,
+      "quality_counts": {
+        "complete": 71,
+        "partial": 1,
+        "poor": 0
+      },
+      "status_url": "./data/brent-status.json"
+    },
+    {
+      "area_id": "bromley",
+      "label": "London Borough of Bromley",
+      "area_type": "borough",
+      "la_code": 305,
+      "school_count": 76,
+      "quality_counts": {
+        "complete": 73,
+        "partial": 3,
+        "poor": 0
+      },
+      "status_url": "./data/bromley-status.json"
     },
     {
       "area_id": "camden",
       "label": "London Borough of Camden",
       "area_type": "borough",
       "la_code": 202,
-      "school_count": 0,
+      "school_count": 48,
       "quality_counts": {
-        "complete": 0,
+        "complete": 48,
         "partial": 0,
         "poor": 0
       },
       "status_url": "./data/camden-status.json"
+    },
+    {
+      "area_id": "city-of-london",
+      "label": "City of London",
+      "area_type": "borough",
+      "la_code": 201,
+      "school_count": 1,
+      "quality_counts": {
+        "complete": 1,
+        "partial": 0,
+        "poor": 0
+      },
+      "status_url": "./data/city-of-london-status.json"
+    },
+    {
+      "area_id": "croydon",
+      "label": "London Borough of Croydon",
+      "area_type": "borough",
+      "la_code": 306,
+      "school_count": 97,
+      "quality_counts": {
+        "complete": 92,
+        "partial": 5,
+        "poor": 0
+      },
+      "status_url": "./data/croydon-status.json"
+    },
+    {
+      "area_id": "ealing",
+      "label": "London Borough of Ealing",
+      "area_type": "borough",
+      "la_code": 307,
+      "school_count": 77,
+      "quality_counts": {
+        "complete": 75,
+        "partial": 2,
+        "poor": 0
+      },
+      "status_url": "./data/ealing-status.json"
+    },
+    {
+      "area_id": "enfield",
+      "label": "London Borough of Enfield",
+      "area_type": "borough",
+      "la_code": 308,
+      "school_count": 88,
+      "quality_counts": {
+        "complete": 83,
+        "partial": 5,
+        "poor": 0
+      },
+      "status_url": "./data/enfield-status.json"
+    },
+    {
+      "area_id": "greenwich",
+      "label": "Royal Borough of Greenwich",
+      "area_type": "borough",
+      "la_code": 203,
+      "school_count": 76,
+      "quality_counts": {
+        "complete": 72,
+        "partial": 4,
+        "poor": 0
+      },
+      "status_url": "./data/greenwich-status.json"
+    },
+    {
+      "area_id": "hackney",
+      "label": "London Borough of Hackney",
+      "area_type": "borough",
+      "la_code": 204,
+      "school_count": 66,
+      "quality_counts": {
+        "complete": 66,
+        "partial": 0,
+        "poor": 0
+      },
+      "status_url": "./data/hackney-status.json"
+    },
+    {
+      "area_id": "hammersmith-and-fulham",
+      "label": "London Borough of Hammersmith and Fulham",
+      "area_type": "borough",
+      "la_code": 205,
+      "school_count": 47,
+      "quality_counts": {
+        "complete": 47,
+        "partial": 0,
+        "poor": 0
+      },
+      "status_url": "./data/hammersmith-and-fulham-status.json"
+    },
+    {
+      "area_id": "haringey",
+      "label": "London Borough of Haringey",
+      "area_type": "borough",
+      "la_code": 309,
+      "school_count": 72,
+      "quality_counts": {
+        "complete": 70,
+        "partial": 2,
+        "poor": 0
+      },
+      "status_url": "./data/haringey-status.json"
+    },
+    {
+      "area_id": "harrow",
+      "label": "London Borough of Harrow",
+      "area_type": "borough",
+      "la_code": 310,
+      "school_count": 53,
+      "quality_counts": {
+        "complete": 52,
+        "partial": 1,
+        "poor": 0
+      },
+      "status_url": "./data/harrow-status.json"
+    },
+    {
+      "area_id": "havering",
+      "label": "London Borough of Havering",
+      "area_type": "borough",
+      "la_code": 311,
+      "school_count": 72,
+      "quality_counts": {
+        "complete": 72,
+        "partial": 0,
+        "poor": 0
+      },
+      "status_url": "./data/havering-status.json"
+    },
+    {
+      "area_id": "hillingdon",
+      "label": "London Borough of Hillingdon",
+      "area_type": "borough",
+      "la_code": 312,
+      "school_count": 66,
+      "quality_counts": {
+        "complete": 65,
+        "partial": 1,
+        "poor": 0
+      },
+      "status_url": "./data/hillingdon-status.json"
+    },
+    {
+      "area_id": "hounslow",
+      "label": "London Borough of Hounslow",
+      "area_type": "borough",
+      "la_code": 313,
+      "school_count": 63,
+      "quality_counts": {
+        "complete": 57,
+        "partial": 6,
+        "poor": 0
+      },
+      "status_url": "./data/hounslow-status.json"
+    },
+    {
+      "area_id": "islington",
+      "label": "London Borough of Islington",
+      "area_type": "borough",
+      "la_code": 206,
+      "school_count": 50,
+      "quality_counts": {
+        "complete": 48,
+        "partial": 2,
+        "poor": 0
+      },
+      "status_url": "./data/islington-status.json"
+    },
+    {
+      "area_id": "kensington-and-chelsea",
+      "label": "Royal Borough of Kensington and Chelsea",
+      "area_type": "borough",
+      "la_code": 207,
+      "school_count": 32,
+      "quality_counts": {
+        "complete": 31,
+        "partial": 1,
+        "poor": 0
+      },
+      "status_url": "./data/kensington-and-chelsea-status.json"
+    },
+    {
+      "area_id": "kingston-upon-thames",
+      "label": "Royal Borough of Kingston upon Thames",
+      "area_type": "borough",
+      "la_code": 314,
+      "school_count": 46,
+      "quality_counts": {
+        "complete": 44,
+        "partial": 2,
+        "poor": 0
+      },
+      "status_url": "./data/kingston-upon-thames-status.json"
+    },
+    {
+      "area_id": "lambeth",
+      "label": "London Borough of Lambeth",
+      "area_type": "borough",
+      "la_code": 208,
+      "school_count": 74,
+      "quality_counts": {
+        "complete": 72,
+        "partial": 2,
+        "poor": 0
+      },
+      "status_url": "./data/lambeth-status.json"
+    },
+    {
+      "area_id": "lewisham",
+      "label": "London Borough of Lewisham",
+      "area_type": "borough",
+      "la_code": 209,
+      "school_count": 78,
+      "quality_counts": {
+        "complete": 76,
+        "partial": 2,
+        "poor": 0
+      },
+      "status_url": "./data/lewisham-status.json"
+    },
+    {
+      "area_id": "merton",
+      "label": "London Borough of Merton",
+      "area_type": "borough",
+      "la_code": 315,
+      "school_count": 52,
+      "quality_counts": {
+        "complete": 49,
+        "partial": 3,
+        "poor": 0
+      },
+      "status_url": "./data/merton-status.json"
+    },
+    {
+      "area_id": "newham",
+      "label": "London Borough of Newham",
+      "area_type": "borough",
+      "la_code": 316,
+      "school_count": 88,
+      "quality_counts": {
+        "complete": 84,
+        "partial": 4,
+        "poor": 0
+      },
+      "status_url": "./data/newham-status.json"
+    },
+    {
+      "area_id": "redbridge",
+      "label": "London Borough of Redbridge",
+      "area_type": "borough",
+      "la_code": 317,
+      "school_count": 68,
+      "quality_counts": {
+        "complete": 67,
+        "partial": 1,
+        "poor": 0
+      },
+      "status_url": "./data/redbridge-status.json"
+    },
+    {
+      "area_id": "richmond-upon-thames",
+      "label": "London Borough of Richmond upon Thames",
+      "area_type": "borough",
+      "la_code": 318,
+      "school_count": 52,
+      "quality_counts": {
+        "complete": 52,
+        "partial": 0,
+        "poor": 0
+      },
+      "status_url": "./data/richmond-upon-thames-status.json"
+    },
+    {
+      "area_id": "southwark",
+      "label": "London Borough of Southwark",
+      "area_type": "borough",
+      "la_code": 210,
+      "school_count": 86,
+      "quality_counts": {
+        "complete": 82,
+        "partial": 4,
+        "poor": 0
+      },
+      "status_url": "./data/southwark-status.json"
+    },
+    {
+      "area_id": "sutton",
+      "label": "London Borough of Sutton",
+      "area_type": "borough",
+      "la_code": 319,
+      "school_count": 56,
+      "quality_counts": {
+        "complete": 50,
+        "partial": 6,
+        "poor": 0
+      },
+      "status_url": "./data/sutton-status.json"
+    },
+    {
+      "area_id": "tower-hamlets",
+      "label": "London Borough of Tower Hamlets",
+      "area_type": "borough",
+      "la_code": 211,
+      "school_count": 83,
+      "quality_counts": {
+        "complete": 79,
+        "partial": 4,
+        "poor": 0
+      },
+      "status_url": "./data/tower-hamlets-status.json"
+    },
+    {
+      "area_id": "waltham-forest",
+      "label": "London Borough of Waltham Forest",
+      "area_type": "borough",
+      "la_code": 320,
+      "school_count": 68,
+      "quality_counts": {
+        "complete": 68,
+        "partial": 0,
+        "poor": 0
+      },
+      "status_url": "./data/waltham-forest-status.json"
+    },
+    {
+      "area_id": "wandsworth",
+      "label": "London Borough of Wandsworth",
+      "area_type": "borough",
+      "la_code": 212,
+      "school_count": 69,
+      "quality_counts": {
+        "complete": 67,
+        "partial": 2,
+        "poor": 0
+      },
+      "status_url": "./data/wandsworth-status.json"
+    },
+    {
+      "area_id": "westminster",
+      "label": "City of Westminster",
+      "area_type": "borough",
+      "la_code": 213,
+      "school_count": 41,
+      "quality_counts": {
+        "complete": 40,
+        "partial": 1,
+        "poor": 0
+      },
+      "status_url": "./data/westminster-status.json"
     }
   ]
 }
