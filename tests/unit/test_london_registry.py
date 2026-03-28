@@ -144,9 +144,11 @@ class TestLoadAreaConfigWithLaCode(unittest.TestCase):
         config = load_area_config(area="camden")
         self.assertEqual(config.la_code, 202)
 
-    def test_kt19_has_la_code(self):
+    def test_kt19_has_no_la_code(self):
+        # KT19 spans multiple LAs (Sutton 319, Surrey 936, Kingston 314, Merton 315);
+        # la_code is intentionally absent so distance-only filtering is used.
         config = load_area_config(area="KT19")
-        self.assertEqual(config.la_code, 319)
+        self.assertIsNone(config.la_code)
 
     def test_kingston_upon_thames_la_code(self):
         config = load_area_config(area="kingston-upon-thames")

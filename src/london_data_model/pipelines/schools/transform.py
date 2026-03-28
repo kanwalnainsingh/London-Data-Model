@@ -75,7 +75,9 @@ def is_in_scope_school(record: SchoolRecord) -> bool:
 
 def is_within_max_distance(record: SchoolRecord, threshold_config: Dict[str, Any]) -> bool:
     if record.distance_km is None:
-        return True
+        # No coordinates → distance unknown; exclude rather than pass through.
+        # This prevents online/virtual schools with no physical address from appearing.
+        return False
     profile = resolve_threshold_profile(record.phase, threshold_config)
     if profile is None:
         return True
