@@ -34,15 +34,14 @@ official_input:
     address_line_2: Locality
     address_line_3: Address3
     town: Town
-    county: County
+    county: "County (name)"
     postcode: Postcode
-    phase: PhaseOfEducation
-    establishment_type: TypeOfEstablishment
-    is_open: EstablishmentStatus
-    latitude: Latitude
-    longitude: Longitude
+    phase: "PhaseOfEducation (name)"
+    establishment_type: "TypeOfEstablishment (name)"
+    is_open: "EstablishmentStatus (name)"
+    easting: Easting
+    northing: Northing
   ofsted_column_map:
     school_urn: URN
     ofsted_rating_latest: Overall effectiveness
-    ofsted_inspection_date_latest: Inspection end date
-    ofsted_report_url: Web link
+    ofsted_inspection_date_latest: Published date

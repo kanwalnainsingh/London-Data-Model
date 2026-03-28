@@ -11,6 +11,11 @@ def _parse_scalar(value: str) -> Any:
     raw = value.strip()
     if raw == "":
         return None
+    # Strip surrounding double or single quotes (YAML quoted strings)
+    if (raw.startswith('"') and raw.endswith('"')) or (
+        raw.startswith("'") and raw.endswith("'")
+    ):
+        return raw[1:-1]
     if raw.lower() in ("null", "none"):
         return None
     if raw.lower() == "true":

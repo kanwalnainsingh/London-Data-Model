@@ -90,8 +90,12 @@ def _resolve_ofsted_url(publications_url: str) -> str:
     )
 
 
-def _ods_to_csv(ods_path: Path, csv_path: Path) -> None:
-    """Convert the first sheet of an ODS file to CSV using built-in zipfile + xml."""
+def _ods_to_csv(ods_path: Path, csv_path: Path, data_column: str = "URN") -> None:
+    """Convert the data sheet of an ODS file to CSV using built-in zipfile + xml.
+
+    Selects the sheet whose first non-empty row contains data_column as a header.
+    Falls back to the last sheet if no match is found.
+    """
     with zipfile.ZipFile(ods_path) as zf:
         with zf.open("content.xml") as fh:
             tree = ET.parse(fh)
@@ -103,22 +107,50 @@ def _ods_to_csv(ods_path: Path, csv_path: Path) -> None:
     repeat_attr = "{%s}number-columns-repeated" % _ODS_NS["table"]
     p_tag = "{%s}p" % _ODS_NS["text"]
 
-    table = root.find(".//" + table_tag)
-    if table is None:
+    all_tables = root.findall(".//" + table_tag)
+    if not all_tables:
         raise FetchError("No table found in ODS content.xml from {0}".format(ods_path))
 
-    rows = []
-    for row_el in table.findall(row_tag):
+    def _first_row_values(tbl):
+        for row_el in tbl.findall(row_tag):
+            cells = []
+            for cell_el in row_el.findall(cell_tag):
+                repeat = int(cell_el.get(repeat_attr, 1))
+                text_nodes = cell_el.findall(p_tag)
+                value = " ".join((t.text or "") for t in text_nodes).strip()
+                cells.extend([value] * repeat)
+            non_empty = [c for c in cells if c]
+            if non_empty:
+                return non_empty
+        return []
+
+    # Pick the sheet whose first row contains data_column; fall back to last sheet
+    table = all_tables[-1]
+    for tbl in all_tables:
+        if data_column in _first_row_values(tbl):
+            table = tbl
+            break
+
+    def _parse_row(row_el):
         cells = []
         for cell_el in row_el.findall(cell_tag):
             repeat = int(cell_el.get(repeat_attr, 1))
             text_nodes = cell_el.findall(p_tag)
             value = " ".join((t.text or "") for t in text_nodes).strip()
             cells.extend([value] * repeat)
-        # Strip trailing empty cells
         while cells and cells[-1] == "":
             cells.pop()
-        rows.append(cells)
+        return cells
+
+    all_rows = [_parse_row(r) for r in table.findall(row_tag)]
+
+    # Find the header row (first row containing data_column) and drop preamble rows
+    header_idx = 0
+    for i, row in enumerate(all_rows):
+        if data_column in row:
+            header_idx = i
+            break
+    rows = [r for r in all_rows[header_idx:] if any(r)]
 
     # Strip trailing empty rows
     while rows and not any(rows[-1]):

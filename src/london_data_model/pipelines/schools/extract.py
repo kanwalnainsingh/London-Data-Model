@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from london_data_model.settings import PROJECT_ROOT
 from london_data_model.types import ExtractResult, PipelineContext, SourceDescriptor
+from london_data_model.utils.geo import bng_to_wgs84, parse_bng_coordinate
 
 
 LOGGER = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ def _load_csv_rows(path: Path) -> List[Dict[str, Any]]:
     if not path.exists():
         raise OfficialSourceConfigError("Official input file not found: {0}".format(path))
 
-    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+    with path.open("r", encoding="cp1252", newline="") as handle:
         return list(csv.DictReader(handle))
 
 
@@ -46,7 +47,7 @@ def _load_csv_header(path: Path) -> List[str]:
     if not path.exists():
         raise OfficialSourceConfigError("Official input file not found: {0}".format(path))
 
-    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+    with path.open("r", encoding="cp1252", newline="") as handle:
         reader = csv.reader(handle)
         header = next(reader, None)
     if not header:
@@ -131,6 +132,16 @@ def _map_record(raw_record: Dict[str, Any], column_map: Dict[str, str]) -> Dict[
         mapped["latitude"] = _normalize_float(mapped["latitude"])
     if "longitude" in mapped:
         mapped["longitude"] = _normalize_float(mapped["longitude"])
+
+    # Convert BNG easting/northing to WGS84 lat/lon when lat/lon are absent
+    if mapped.get("latitude") is None and mapped.get("longitude") is None:
+        easting = parse_bng_coordinate(mapped.get("easting"))
+        northing = parse_bng_coordinate(mapped.get("northing"))
+        if easting is not None and northing is not None:
+            try:
+                mapped["latitude"], mapped["longitude"] = bng_to_wgs84(easting, northing)
+            except Exception:
+                pass
 
     return mapped
 
