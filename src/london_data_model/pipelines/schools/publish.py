@@ -145,6 +145,7 @@ def publish(
     public_summary_path = DOCS_DATA_DIR / "{0}-summary.json".format(context.area.lower())
     public_manifest_path = DOCS_DATA_DIR / "{0}-manifest.json".format(context.area.lower())
     public_status_path = DOCS_DATA_DIR / "{0}-status.json".format(context.area.lower())
+    public_schools_path = DOCS_DATA_DIR / "{0}-schools.json".format(context.area.lower())
 
     _write_csv(csv_path, validated)
     _write_json(records_path, [record.to_dict() for record in validated.records])
@@ -208,6 +209,10 @@ def publish(
         public_status_path,
         _build_public_status_payload(summary_payload, manifest_payload, context),
     )
+    _write_json_minified(
+        public_schools_path,
+        [record.to_dict() for record in validated.records],
+    )
 
     output_files = {
         "csv": str(csv_path),
@@ -217,6 +222,7 @@ def publish(
         "public_summary_json": str(public_summary_path),
         "public_manifest_json": str(public_manifest_path),
         "public_status_json": str(public_status_path),
+        "public_schools_json": str(public_schools_path),
     }
     LOGGER.info("Publish stage completed with outputs=%s", output_files)
     return PublishResult(

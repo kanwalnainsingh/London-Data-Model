@@ -285,9 +285,182 @@
         font-style: italic;
       }
 
+      /* ── Search bar ───────────────────────────────────── */
+      .search-bar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 18px;
+      }
+
+      .search-input {
+        flex: 1;
+        min-width: 200px;
+        padding: 12px 18px;
+        border: 2px solid var(--line);
+        border-radius: 999px;
+        font-size: 16px;
+        font-family: inherit;
+        background: var(--paper);
+        color: var(--ink);
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      .search-input:focus { border-color: var(--accent); }
+
+      .search-btn {
+        padding: 12px 24px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 999px;
+        font-size: 16px;
+        font-family: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+
+      .search-btn:hover { opacity: 0.88; }
+      .search-btn:disabled { opacity: 0.5; cursor: default; }
+
+      .phase-filter {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+
+      .phase-btn {
+        padding: 6px 16px;
+        border: 2px solid var(--line);
+        border-radius: 999px;
+        background: var(--paper);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        color: var(--muted);
+        transition: all 0.12s;
+      }
+
+      .phase-btn.active {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      /* ── School cards ─────────────────────────────────── */
+      .school-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+      }
+
+      .school-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 4px 14px rgba(31, 41, 51, 0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .school-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .school-name {
+        font-weight: 700;
+        font-size: 15px;
+        line-height: 1.3;
+        color: var(--ink);
+        flex: 1;
+      }
+
+      .dist-badge {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--accent);
+        white-space: nowrap;
+        background: var(--accent-soft);
+        padding: 3px 10px;
+        border-radius: 999px;
+      }
+
+      .school-meta {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .phase-tag {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        padding: 2px 9px;
+        border-radius: 999px;
+      }
+
+      .phase-primary   { background: #dbeafe; color: #1e40af; }
+      .phase-secondary { background: #ede9fe; color: #5b21b6; }
+      .phase-all-through { background: #fef3c7; color: #92400e; }
+
+      .ofsted-tag {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 9px;
+        border-radius: 999px;
+      }
+
+      .ofsted-outstanding   { background: #d6f3ef; color: #0f4e47; }
+      .ofsted-good          { background: #d1fae5; color: #065f46; }
+      .ofsted-requires      { background: #fef3c7; color: #92400e; }
+      .ofsted-inadequate    { background: #fee2e2; color: #7f1d1d; }
+      .ofsted-unknown       { background: var(--line); color: var(--muted); }
+
+      .school-address {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      .school-detail-row {
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .search-msg {
+        text-align: center;
+        padding: 32px;
+        color: var(--muted);
+        font-style: italic;
+      }
+
+      .search-error {
+        background: var(--red-soft);
+        color: var(--red);
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-size: 14px;
+      }
+
       @media (max-width: 640px) {
         .two-col { grid-template-columns: 1fr; }
         .borough-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        .school-grid { grid-template-columns: 1fr; }
       }
     </style>
   </head>
@@ -307,6 +480,32 @@
           <a class="button secondary" href="./SOURCES.md">Open SOURCES.md</a>
         </div>
       </section>
+
+      <!-- ── Postcode search ────────────────────────────── -->
+      <div class="card" style="margin-top:22px;">
+        <h2 style="margin-top:0;">Find Schools Near a Postcode</h2>
+        <p class="small" style="margin-top:-4px;">Enter any UK postcode to see all schools in the dataset ranked by distance from that point.</p>
+        <div class="search-bar">
+          <input
+            class="search-input"
+            id="postcode-input"
+            type="text"
+            placeholder="e.g. KT19 0AB"
+            autocomplete="off"
+            spellcheck="false"
+            maxlength="10"
+          />
+          <button class="search-btn" id="search-btn">Search</button>
+        </div>
+        <div class="phase-filter" id="phase-filter" style="display:none;">
+          <button class="phase-btn active" data-phase="all">All phases</button>
+          <button class="phase-btn" data-phase="primary">Primary</button>
+          <button class="phase-btn" data-phase="secondary">Secondary</button>
+        </div>
+        <div id="search-results">
+          <div class="search-msg">Enter a postcode above to see nearby schools.</div>
+        </div>
+      </div>
 
       <!-- ── London-wide summary ────────────────────────── -->
       <div id="loading-msg">Loading London dashboard data…</div>
@@ -542,6 +741,167 @@
           blockerBox.className = "status-good";
         }
       }
+
+      // ── Postcode search ─────────────────────────────────
+
+      let _schoolsCache = null;
+      let _activePhase = "all";
+
+      function haversineKm(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const toRad = x => x * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat / 2) ** 2
+          + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      }
+
+      function ofstedClass(rating) {
+        if (!rating) return "ofsted-unknown";
+        const r = rating.toLowerCase();
+        if (r.includes("outstanding")) return "ofsted-outstanding";
+        if (r.includes("good"))        return "ofsted-good";
+        if (r.includes("requires"))    return "ofsted-requires";
+        if (r.includes("inadequate"))  return "ofsted-inadequate";
+        return "ofsted-unknown";
+      }
+
+      function phaseClass(phase) {
+        if (!phase) return "";
+        const p = phase.toLowerCase().replace(/[\s-]/g, "-");
+        if (p.includes("primary"))   return "phase-primary";
+        if (p.includes("secondary")) return "phase-secondary";
+        return "phase-all-through";
+      }
+
+      function renderSchoolCard(s) {
+        const dist = typeof s._dist_km === "number" ? s._dist_km.toFixed(1) + " km" : "";
+        const ofstedLabel = s.ofsted_rating_latest || "No rating";
+        const inspDate = s.ofsted_inspection_date_latest
+          ? "Inspected " + s.ofsted_inspection_date_latest : "";
+        const qualBadge = s.data_quality_status === "complete"
+          ? `<span class="badge badge-good">Complete</span>`
+          : s.data_quality_status === "partial"
+          ? `<span class="badge badge-warn">Partial data</span>`
+          : `<span class="badge badge-poor">Poor data</span>`;
+
+        return `<div class="school-card">
+          <div class="school-card-header">
+            <div class="school-name">${s.school_name}</div>
+            ${dist ? `<div class="dist-badge">${dist}</div>` : ""}
+          </div>
+          <div class="school-meta">
+            <span class="phase-tag ${phaseClass(s.phase)}">${s.phase || "unknown"}</span>
+            <span class="ofsted-tag ${ofstedClass(s.ofsted_rating_latest)}">${ofstedLabel}</span>
+            ${qualBadge}
+          </div>
+          <div class="school-address">${s.address || ""}${s.postcode ? ", " + s.postcode : ""}</div>
+          <div class="school-detail-row">
+            ${s.establishment_type ? `<span>${s.establishment_type}</span>` : ""}
+            ${inspDate ? `<span>${inspDate}</span>` : ""}
+            ${s.school_urn ? `<span>URN ${s.school_urn}</span>` : ""}
+          </div>
+        </div>`;
+      }
+
+      function renderResults(schools, postcode) {
+        const resultsEl = document.getElementById("search-results");
+        const filterEl  = document.getElementById("phase-filter");
+
+        const filtered = _activePhase === "all"
+          ? schools
+          : schools.filter(s => (s.phase || "").toLowerCase() === _activePhase);
+
+        if (filtered.length === 0) {
+          resultsEl.innerHTML = `<div class="search-msg">No ${_activePhase === "all" ? "" : _activePhase + " "}schools found near ${postcode}.</div>`;
+          return;
+        }
+
+        filterEl.style.display = "";
+        resultsEl.innerHTML = `
+          <p class="small" style="margin-bottom:12px;">
+            Showing <strong>${filtered.length}</strong> school${filtered.length !== 1 ? "s" : ""}
+            near <strong>${postcode.toUpperCase()}</strong>, sorted by distance.
+          </p>
+          <div class="school-grid">${filtered.map(renderSchoolCard).join("")}</div>`;
+      }
+
+      async function loadSchools(areaId) {
+        if (_schoolsCache) return _schoolsCache;
+        const url = "./data/" + areaId.toLowerCase() + "-schools.json";
+        const r = await fetch(url);
+        if (!r.ok) throw new Error("School data not yet published. Run the pipeline first.");
+        _schoolsCache = await r.json();
+        return _schoolsCache;
+      }
+
+      async function doSearch() {
+        const input = document.getElementById("postcode-input");
+        const btn   = document.getElementById("search-btn");
+        const resultsEl = document.getElementById("search-results");
+        const filterEl  = document.getElementById("phase-filter");
+
+        const raw = (input.value || "").trim().replace(/\s+/g, "").toUpperCase();
+        if (!raw) { input.focus(); return; }
+
+        btn.disabled = true;
+        btn.textContent = "Searching…";
+        filterEl.style.display = "none";
+        resultsEl.innerHTML = `<div class="search-msg">Looking up ${raw}…</div>`;
+
+        try {
+          // 1. Geocode the postcode
+          const geo = await fetch("https://api.postcodes.io/postcodes/" + encodeURIComponent(raw));
+          if (!geo.ok) {
+            const err = await geo.json().catch(() => ({}));
+            throw new Error(err.error || "Postcode not found. Check it and try again.");
+          }
+          const { result } = await geo.json();
+          const { latitude, longitude } = result;
+
+          // 2. Load school data (cached after first call)
+          const schools = await loadSchools("kt19");
+
+          // 3. Calculate distances and sort
+          const withDist = schools
+            .filter(s => s.latitude != null && s.longitude != null)
+            .map(s => ({ ...s, _dist_km: haversineKm(latitude, longitude, s.latitude, s.longitude) }))
+            .sort((a, b) => a._dist_km - b._dist_km);
+
+          renderResults(withDist, raw);
+
+          // Store for phase filtering
+          _schoolsCache._lastResults = withDist;
+          _schoolsCache._lastPostcode = raw;
+
+        } catch (err) {
+          filterEl.style.display = "none";
+          resultsEl.innerHTML = `<div class="search-error">⚠ ${err.message}</div>`;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Search";
+        }
+      }
+
+      // Phase filter buttons
+      document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("search-btn").addEventListener("click", doSearch);
+        document.getElementById("postcode-input").addEventListener("keydown", e => {
+          if (e.key === "Enter") doSearch();
+        });
+
+        document.querySelectorAll(".phase-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            _activePhase = btn.dataset.phase;
+            document.querySelectorAll(".phase-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            if (_schoolsCache && _schoolsCache._lastResults) {
+              renderResults(_schoolsCache._lastResults, _schoolsCache._lastPostcode);
+            }
+          });
+        });
+      });
 
       // Load London index; fall back to KT19
       fetch("./data/london-index.json")
