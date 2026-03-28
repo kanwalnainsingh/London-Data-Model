@@ -88,28 +88,44 @@ class GoldenPipelineRegressionTestCase(unittest.TestCase):
                 Path(published.output_files["public_manifest_json"]).read_text(encoding="utf-8")
             )
 
-        self.assertEqual(len(extracted.records), 3)
-        self.assertEqual(len(transformed.records), 2)
-        self.assertEqual(transformed.excluded_record_count, 1)
-        self.assertEqual(len(validated.records), 2)
-        self.assertEqual(published.record_count, 2)
+        # 4 extracted: no LA-code filter (KT19 spans Sutton LA 319, Surrey LA 936, etc.)
+        # URN 1001 Sutton primary, 1002 Sutton secondary, 1003 Sutton independent, 1004 Surrey academy
+        self.assertEqual(len(extracted.records), 4)
 
-        self.assertEqual([record["school_urn"] for record in records_payload], ["1001", "1002"])
-        self.assertEqual(records_payload[0]["distance_km"], 0.0)
-        self.assertEqual(records_payload[0]["accessibility_band"], "very_close")
-        self.assertEqual(records_payload[0]["proximity_score"], 100.0)
-        self.assertEqual(records_payload[0]["data_quality_status"], "complete")
-        self.assertEqual(records_payload[1]["data_quality_status"], "partial")
-        self.assertEqual(records_payload[1]["data_quality_flags"], [
+        # 3 transformed: 1003 excluded (Independent school — not mainstream)
+        self.assertEqual(len(transformed.records), 3)
+        self.assertEqual(transformed.excluded_record_count, 1)
+        self.assertEqual(len(validated.records), 3)
+        self.assertEqual(published.record_count, 3)
+
+        output_urns = [record["school_urn"] for record in records_payload]
+        self.assertIn("1001", output_urns)  # Sutton primary
+        self.assertIn("1002", output_urns)  # Sutton secondary
+        self.assertIn("1004", output_urns)  # Surrey academy — confirms multi-LA extraction
+        self.assertNotIn("1003", output_urns)  # Independent school correctly excluded
+
+        record_1001 = next(r for r in records_payload if r["school_urn"] == "1001")
+        self.assertEqual(record_1001["distance_km"], 0.0)
+        self.assertEqual(record_1001["accessibility_band"], "very_close")
+        self.assertEqual(record_1001["proximity_score"], 100.0)
+        self.assertEqual(record_1001["data_quality_status"], "complete")
+
+        record_1002 = next(r for r in records_payload if r["school_urn"] == "1002")
+        self.assertEqual(record_1002["data_quality_status"], "partial")
+        self.assertEqual(record_1002["data_quality_flags"], [
             "missing_ofsted_rating",
             "missing_inspection_date",
         ])
 
+        record_1004 = next(r for r in records_payload if r["school_urn"] == "1004")
+        self.assertAlmostEqual(record_1004["distance_km"], 2.59, delta=0.5)
+        self.assertEqual(record_1004["data_quality_status"], "partial")  # No Ofsted data in fixture
+
         self.assertEqual(manifest_payload["input_mode"], "official")
-        self.assertEqual(manifest_payload["record_counts"]["extracted"], 3)
-        self.assertEqual(manifest_payload["record_counts"]["transformed_included"], 2)
+        self.assertEqual(manifest_payload["record_counts"]["extracted"], 4)
+        self.assertEqual(manifest_payload["record_counts"]["transformed_included"], 3)
         self.assertEqual(manifest_payload["record_counts"]["transformed_excluded"], 1)
-        self.assertEqual(manifest_payload["quality_counts"], {"complete": 1, "partial": 1, "poor": 0})
+        self.assertEqual(manifest_payload["quality_counts"], {"complete": 1, "partial": 2, "poor": 0})
         self.assertEqual(len(manifest_payload["input_sources"]), 2)
         self.assertEqual(public_manifest_payload["input_sources"][0]["source_path"], "tests/fixtures/kt19_golden/gias_establishments.csv")
 

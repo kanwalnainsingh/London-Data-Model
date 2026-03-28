@@ -8,4 +8,5 @@ search_point_source_reference: repository_config
 search_point_notes: Explicit user-supplied coordinates used as the repeatable district-level KT19 search point for MVP runs. Not asserted as an official centroid.
 latitude: 51.3490
 longitude: -0.2680
-la_code: 319
+# KT19 spans multiple local authorities (Sutton LA 319, Surrey LA 936, Kingston LA 314, Merton LA 315).
+# Distance-based filtering is the correct scoping mechanism — do not restrict by a single LA code.
