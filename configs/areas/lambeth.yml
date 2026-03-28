@@ -1,0 +1,7 @@
+area_id: lambeth
+area_type: borough
+label: London Borough of Lambeth
+la_code: 208
+search_point_method: borough_centroid
+latitude: 51.4571
+longitude: -0.1231

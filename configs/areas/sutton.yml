@@ -1,0 +1,7 @@
+area_id: sutton
+area_type: borough
+label: London Borough of Sutton
+la_code: 319
+search_point_method: borough_centroid
+latitude: 51.3618
+longitude: -0.1945

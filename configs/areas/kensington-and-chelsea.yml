@@ -1,0 +1,7 @@
+area_id: kensington-and-chelsea
+area_type: borough
+label: Royal Borough of Kensington and Chelsea
+la_code: 207
+search_point_method: borough_centroid
+latitude: 51.5020
+longitude: -0.1947

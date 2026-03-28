@@ -1,0 +1,7 @@
+area_id: city-of-london
+area_type: borough
+label: City of London
+la_code: 201
+search_point_method: borough_centroid
+latitude: 51.5155
+longitude: -0.0922

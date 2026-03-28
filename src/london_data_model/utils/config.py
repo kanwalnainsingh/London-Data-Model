@@ -77,7 +77,28 @@ def load_area_config(area: str, config_path: Optional[Path] = None) -> AreaConfi
         search_point_notes=data.get("search_point_notes"),
         latitude=data.get("latitude"),
         longitude=data.get("longitude"),
+        la_code=data.get("la_code"),
     )
+
+
+def load_london_registry() -> Dict[str, Any]:
+    """Load the London boroughs registry from configs/areas/london_boroughs.yml."""
+    path = CONFIGS_DIR / "areas" / "london_boroughs.yml"
+    return load_simple_yaml(path)
+
+
+def list_london_borough_ids(registry: Optional[Dict[str, Any]] = None) -> List[str]:
+    """Return sorted list of borough area_ids from the registry."""
+    if registry is None:
+        registry = load_london_registry()
+    boroughs = registry.get("boroughs", {})
+    return sorted(boroughs.keys())
+
+
+def load_borough_configs(borough_ids: Optional[List[str]] = None) -> List[AreaConfig]:
+    """Load AreaConfigs for specified boroughs (or all London boroughs if None)."""
+    ids = borough_ids or list_london_borough_ids()
+    return [load_area_config(area=bid) for bid in ids]
 
 
 def load_pipeline_config() -> Dict[str, Any]:

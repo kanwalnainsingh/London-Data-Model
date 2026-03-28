@@ -1,0 +1,7 @@
+area_id: southwark
+area_type: borough
+label: London Borough of Southwark
+la_code: 210
+search_point_method: borough_centroid
+latitude: 51.4733
+longitude: -0.0763

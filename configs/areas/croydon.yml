@@ -1,0 +1,7 @@
+area_id: croydon
+area_type: borough
+label: London Borough of Croydon
+la_code: 306
+search_point_method: borough_centroid
+latitude: 51.3762
+longitude: -0.0982

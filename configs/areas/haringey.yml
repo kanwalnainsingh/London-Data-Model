@@ -1,0 +1,7 @@
+area_id: haringey
+area_type: borough
+label: London Borough of Haringey
+la_code: 309
+search_point_method: borough_centroid
+latitude: 51.5906
+longitude: -0.1110

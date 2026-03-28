@@ -1,0 +1,7 @@
+area_id: lewisham
+area_type: borough
+label: London Borough of Lewisham
+la_code: 209
+search_point_method: borough_centroid
+latitude: 51.4415
+longitude: -0.0117

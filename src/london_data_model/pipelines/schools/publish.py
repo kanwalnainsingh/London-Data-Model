@@ -79,7 +79,8 @@ def _build_public_input_sources(input_sources: list) -> list:
     return public_sources
 
 
-def _build_public_manifest_payload(manifest_payload: dict) -> dict:
+def _build_public_manifest_payload(manifest_payload: dict, area_id: str) -> dict:
+    area_lower = area_id.lower()
     return {
         "run_id": manifest_payload["run_id"],
         "started_at": manifest_payload["started_at"],
@@ -96,8 +97,8 @@ def _build_public_manifest_payload(manifest_payload: dict) -> dict:
         "quality_counts": manifest_payload["quality_counts"],
         "notes": manifest_payload["notes"],
         "public_artifacts": {
-            "status_json": "./data/kt19-status.json",
-            "summary_json": "./data/kt19-summary.json",
+            "status_json": "./data/{0}-status.json".format(area_lower),
+            "summary_json": "./data/{0}-summary.json".format(area_lower),
         },
     }
 
@@ -197,7 +198,7 @@ def publish(
     }
     _write_json(manifest_path, manifest_payload)
     _write_json(public_summary_path, summary_payload)
-    _write_json(public_manifest_path, _build_public_manifest_payload(manifest_payload))
+    _write_json(public_manifest_path, _build_public_manifest_payload(manifest_payload, context.area_config.area_id))
     _write_json(
         public_status_path,
         _build_public_status_payload(summary_payload, manifest_payload, context),

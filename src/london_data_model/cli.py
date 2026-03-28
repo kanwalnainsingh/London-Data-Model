@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from london_data_model.pipelines.schools.orchestrate import run_london
 from london_data_model.pipelines.schools.pipeline import run as run_schools_pipeline
 
 
@@ -16,7 +17,16 @@ def build_parser() -> argparse.ArgumentParser:
     schools_subparsers = schools_parser.add_subparsers(dest="action", required=True)
 
     run_parser = schools_subparsers.add_parser("run", help="Run the schools pipeline")
-    run_parser.add_argument("--area", default="KT19", help="Configured search area identifier")
+    run_parser.add_argument(
+        "--area",
+        default="KT19",
+        help="Area identifier: borough name, 'KT19', or 'london' for all 33 boroughs",
+    )
+    run_parser.add_argument(
+        "--boroughs",
+        default=None,
+        help="Comma-separated borough IDs to process (only with --area london)",
+    )
     run_parser.add_argument(
         "--config",
         type=Path,
@@ -35,11 +45,18 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def handle_schools_run(args: argparse.Namespace) -> int:
-    result = run_schools_pipeline(
-        area=args.area,
-        config_path=args.config,
-        input_mode=args.input_mode,
-    )
+    if args.area.lower() == "london":
+        result = run_london(
+            boroughs=args.boroughs,
+            config_path=args.config,
+            input_mode=args.input_mode,
+        )
+    else:
+        result = run_schools_pipeline(
+            area=args.area,
+            config_path=args.config,
+            input_mode=args.input_mode,
+        )
     print(result.message)
     return 0 if result.status in ("stub", "success") else 1
 

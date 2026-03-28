@@ -1,0 +1,7 @@
+area_id: greenwich
+area_type: borough
+label: Royal Borough of Greenwich
+la_code: 203
+search_point_method: borough_centroid
+latitude: 51.4892
+longitude: 0.0648

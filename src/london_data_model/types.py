@@ -39,6 +39,7 @@ class AreaConfig:
     search_point_notes: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    la_code: Optional[int] = None
 
 
 @dataclass

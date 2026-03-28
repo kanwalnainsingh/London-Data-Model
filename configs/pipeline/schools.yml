@@ -15,6 +15,7 @@ official_input:
   ofsted_format: csv
   merge_key: school_urn
   schools_column_map:
+    la_code: "LA (code)"
     school_urn: URN
     school_name: EstablishmentName
     address_line_1: Street

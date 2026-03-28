@@ -1,0 +1,7 @@
+area_id: richmond-upon-thames
+area_type: borough
+label: London Borough of Richmond upon Thames
+la_code: 318
+search_point_method: borough_centroid
+latitude: 51.4613
+longitude: -0.3037
