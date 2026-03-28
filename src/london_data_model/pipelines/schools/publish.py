@@ -33,6 +33,11 @@ def _write_json(path: Path, payload: object) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+def _write_json_minified(path: Path, payload: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
+
+
 def _build_public_status_payload(
     summary_payload: dict, manifest_payload: dict, context: PipelineContext
 ) -> dict:
@@ -197,9 +202,9 @@ def publish(
         "notes": validated.notes,
     }
     _write_json(manifest_path, manifest_payload)
-    _write_json(public_summary_path, summary_payload)
-    _write_json(public_manifest_path, _build_public_manifest_payload(manifest_payload, context.area_config.area_id))
-    _write_json(
+    _write_json_minified(public_summary_path, summary_payload)
+    _write_json_minified(public_manifest_path, _build_public_manifest_payload(manifest_payload, context.area_config.area_id))
+    _write_json_minified(
         public_status_path,
         _build_public_status_payload(summary_payload, manifest_payload, context),
     )
