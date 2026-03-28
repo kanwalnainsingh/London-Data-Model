@@ -1,0 +1,7 @@
+area_id: westminster
+area_type: borough
+label: City of Westminster
+la_code: 213
+search_point_method: borough_centroid
+latitude: 51.4975
+longitude: -0.1357

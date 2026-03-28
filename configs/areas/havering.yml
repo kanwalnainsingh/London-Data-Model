@@ -1,0 +1,7 @@
+area_id: havering
+area_type: borough
+label: London Borough of Havering
+la_code: 311
+search_point_method: borough_centroid
+latitude: 51.5779
+longitude: 0.2120

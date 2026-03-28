@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>London Data Model MVP Status</title>
+    <title>London Data Model — School Discovery</title>
     <style>
       :root {
         --bg: #f4f1e8;
@@ -15,11 +15,15 @@
         --line: #d9d2c3;
         --warn: #92400e;
         --warn-soft: #fff4db;
+        --good: #0f4e47;
+        --good-soft: #d6f3ef;
+        --yellow: #78350f;
+        --yellow-soft: #fef3c7;
+        --red: #7f1d1d;
+        --red-soft: #fee2e2;
       }
 
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
 
       body {
         margin: 0;
@@ -31,11 +35,12 @@
       }
 
       .shell {
-        width: min(1120px, calc(100% - 32px));
+        width: min(1180px, calc(100% - 32px));
         margin: 0 auto;
-        padding: 28px 0 48px;
+        padding: 28px 0 64px;
       }
 
+      /* ── Hero ─────────────────────────────────────────── */
       .hero {
         background: linear-gradient(135deg, rgba(15, 118, 110, 0.95), rgba(18, 53, 36, 0.92));
         color: #f7f8f5;
@@ -52,11 +57,7 @@
         margin-bottom: 12px;
       }
 
-      h1 {
-        margin: 0 0 14px;
-        font-size: clamp(34px, 6vw, 58px);
-        line-height: 0.98;
-      }
+      h1 { margin: 0 0 14px; font-size: clamp(30px, 5vw, 52px); line-height: 1.0; }
 
       .hero p {
         max-width: 760px;
@@ -89,80 +90,156 @@
         border: 1px solid rgba(255, 255, 255, 0.2);
       }
 
-      .grid {
+      /* ── London summary stats ─────────────────────────── */
+      .stats-row {
         display: grid;
-        grid-template-columns: repeat(12, 1fr);
-        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
         margin-top: 22px;
       }
 
+      .stat-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 6px 20px rgba(31, 41, 51, 0.06);
+      }
+
+      .stat-card strong {
+        display: block;
+        font-size: 32px;
+        line-height: 1.1;
+        color: var(--accent);
+      }
+
+      .stat-card span {
+        font-size: 13px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      /* ── Section headings ─────────────────────────────── */
+      .section-heading {
+        margin: 36px 0 16px;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--ink);
+        border-bottom: 2px solid var(--line);
+        padding-bottom: 8px;
+      }
+
+      /* ── Borough grid ─────────────────────────────────── */
+      .borough-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 14px;
+      }
+
+      .borough-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 16px;
+        box-shadow: 0 4px 14px rgba(31, 41, 51, 0.05);
+        transition: box-shadow 0.15s;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+      }
+
+      .borough-card:hover {
+        box-shadow: 0 8px 24px rgba(31, 41, 51, 0.12);
+      }
+
+      .borough-name {
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 1.3;
+        margin-bottom: 8px;
+        color: var(--ink);
+      }
+
+      .borough-count {
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--accent);
+        line-height: 1;
+      }
+
+      .borough-count-label {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 10px;
+      }
+
+      .quality-bar {
+        height: 6px;
+        border-radius: 3px;
+        background: var(--line);
+        overflow: hidden;
+        margin-bottom: 4px;
+      }
+
+      .quality-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+      }
+
+      .quality-label {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      /* Quality colour classes */
+      .q-good  { background: #10b981; }
+      .q-warn  { background: #f59e0b; }
+      .q-poor  { background: #ef4444; }
+
+      .badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+        margin-top: 8px;
+      }
+
+      .badge-good   { background: var(--good-soft);   color: var(--good); }
+      .badge-warn   { background: var(--yellow-soft);  color: var(--yellow); }
+      .badge-poor   { background: var(--red-soft);     color: var(--red); }
+      .badge-empty  { background: var(--line);         color: var(--muted); }
+
+      /* ── General card ─────────────────────────────────── */
       .card {
-        grid-column: span 12;
         background: var(--paper);
         border: 1px solid var(--line);
         border-radius: 24px;
         padding: 24px;
         box-shadow: 0 10px 30px rgba(31, 41, 51, 0.06);
+        margin-bottom: 18px;
       }
 
-      .card h2,
-      .card h3 {
-        margin-top: 0;
+      .card h2, .card h3 { margin-top: 0; }
+      .card p, .card li { color: var(--muted); line-height: 1.65; }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-top: 22px;
       }
 
-      .card p,
-      .card li {
-        color: var(--muted);
-        line-height: 1.65;
-      }
-
-      .span-4 {
-        grid-column: span 4;
-      }
-
-      .span-5 {
-        grid-column: span 5;
-      }
-
-      .span-6 {
-        grid-column: span 6;
-      }
-
-      .span-7 {
-        grid-column: span 7;
-      }
-
-      .pill-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .pill {
-        padding: 8px 12px;
-        border-radius: 999px;
-        background: var(--accent-soft);
-        color: #0f4e47;
-        font-size: 14px;
-        font-weight: 700;
-      }
-
-      .status-good,
-      .status-warn {
+      /* ── Status boxes ─────────────────────────────────── */
+      .status-good, .status-warn {
         border-radius: 18px;
-        padding: 16px 18px;
-        margin-top: 16px;
+        padding: 14px 16px;
+        margin-top: 12px;
       }
 
-      .status-good {
-        background: var(--accent-soft);
-        color: #0f4e47;
-      }
-
-      .status-warn {
-        background: var(--warn-soft);
-        color: var(--warn);
-      }
+      .status-good { background: var(--good-soft);   color: var(--good); }
+      .status-warn { background: var(--warn-soft);   color: var(--warn); }
 
       pre {
         margin: 0;
@@ -171,58 +248,58 @@
         background: #1d2530;
         color: #e5edf5;
         overflow-x: auto;
-        font-size: 14px;
+        font-size: 13px;
         line-height: 1.55;
       }
 
-      .metric {
-        display: grid;
-        gap: 4px;
-        padding: 16px;
-        border-radius: 18px;
-        background: #faf7ef;
-        border: 1px solid var(--line);
-      }
-
-      .metric strong {
-        font-size: 28px;
-      }
-
-      .metric span {
-        color: var(--muted);
-      }
-
-      .small {
-        font-size: 14px;
-        color: var(--muted);
-      }
-
+      .small  { font-size: 14px; color: var(--muted); }
       .tiny-label {
         font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 0.08em;
         color: var(--muted);
+        margin-bottom: 4px;
       }
 
-      @media (max-width: 900px) {
-        .span-4,
-        .span-5,
-        .span-6,
-        .span-7 {
-          grid-column: span 12;
-        }
+      /* ── Pilot area ───────────────────────────────────── */
+      .pilot-card {
+        background: #f8f5ee;
+        border: 1px dashed var(--line);
+        border-radius: 18px;
+        padding: 16px;
+      }
+
+      .pilot-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      /* ── Loading / error states ───────────────────────── */
+      #loading-msg {
+        text-align: center;
+        padding: 40px;
+        color: var(--muted);
+        font-style: italic;
+      }
+
+      @media (max-width: 640px) {
+        .two-col { grid-template-columns: 1fr; }
+        .borough-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
       }
     </style>
   </head>
   <body>
     <main class="shell">
+      <!-- ── Hero ───────────────────────────────────────── -->
       <section class="hero">
         <div class="eyebrow">London Data Model</div>
-        <h1>KT19 MVP Status Page</h1>
+        <h1>London School Discovery</h1>
         <p>
-          This page shows what the repository can honestly demonstrate today:
-          a working school-discovery pipeline for KT19 at the infrastructure
-          and rule level, but not yet a committed real-data result set.
+          State-funded mainstream school data for all 33 London boroughs —
+          official sources only, full data-quality transparency.
         </p>
         <div class="hero-actions">
           <a class="button" href="https://github.com/kanwalnainsingh/London-Data-Model">View Repository</a>
@@ -231,234 +308,241 @@
         </div>
       </section>
 
-      <section class="grid">
-        <article class="card span-4">
-          <h2>MVP Scope</h2>
-          <div class="pill-row">
-            <span class="pill">KT19 only</span>
-            <span class="pill">Official data only</span>
-            <span class="pill">No admissions prediction</span>
-            <span class="pill">Local file pipeline</span>
+      <!-- ── London-wide summary ────────────────────────── -->
+      <div id="loading-msg">Loading London dashboard data…</div>
+      <div id="london-summary" style="display:none;">
+        <div class="stats-row">
+          <div class="stat-card">
+            <strong id="stat-boroughs">—</strong>
+            <span>Boroughs processed</span>
           </div>
-          <p>
-            The active MVP is state-funded mainstream school discovery for KT19
-            with distance, accessibility, Ofsted context, and explicit data
-            quality labeling.
-          </p>
-        </article>
-
-        <article class="card span-4">
-          <h2>What Works Now</h2>
-          <ul>
-            <li>Pipeline orchestration and CLI</li>
-            <li>Official and sample input modes</li>
-            <li>CSV schema validation for official files</li>
-            <li>Phase, status, and scope filtering</li>
-            <li>Distance, accessibility, and proximity logic</li>
-            <li>Quality flags and manifest output</li>
-          </ul>
-        </article>
-
-        <article class="card span-4">
-          <h2>Current Blocker</h2>
-          <div id="blocker-box" class="status-warn">
-            Real school rows are not committed yet because the repo does not
-            contain the required local official source files.
+          <div class="stat-card">
+            <strong id="stat-total-schools">—</strong>
+            <span>Total schools</span>
           </div>
-          <p class="small">
-            The pipeline is intentionally honest here: no invented school data,
-            no fake output rows.
-          </p>
-        </article>
-
-        <article class="card span-7">
-          <h2>Current Data State</h2>
-          <div class="grid" style="margin-top: 8px;">
-            <div class="metric span-4">
-              <strong id="metric-school-count">0</strong>
-              <span>published school rows in current artifact</span>
-            </div>
-            <div class="metric span-4">
-              <strong id="metric-input-mode">sample</strong>
-              <span>current committed pipeline input mode</span>
-            </div>
-            <div class="metric span-4">
-              <strong id="metric-generated-at">pending</strong>
-              <span>latest committed artifact generation time</span>
-            </div>
+          <div class="stat-card">
+            <strong id="stat-complete">—</strong>
+            <span>Complete records</span>
           </div>
-          <div id="data-state-box" class="status-good">
-            The page reads a committed JSON snapshot generated from the current
-            summary and manifest artifacts under <code>docs/data/</code>.
+          <div class="stat-card">
+            <strong id="stat-partial">—</strong>
+            <span>Partial records</span>
           </div>
-          <p class="small">
-            Snapshot source:
-            <code id="status-path">docs/data/kt19-status.json</code>
-          </p>
-        </article>
-
-        <article class="card span-5">
-          <h2>KT19 Search Point</h2>
-          <p>
-            The current KT19 configuration uses explicit configured
-            user-supplied coordinates as the repeatable district-level search
-            point for MVP runs.
-          </p>
-          <ul>
-            <li><strong>Method:</strong> <span id="search-point-method">user_supplied</span></li>
-            <li><strong>Latitude:</strong> <span id="search-point-latitude">51.3490</span></li>
-            <li><strong>Longitude:</strong> <span id="search-point-longitude">-0.2680</span></li>
-          </ul>
-          <p class="small">
-            This is intentionally labeled as configured coordinates, not as an
-            asserted official centroid.
-          </p>
-        </article>
-
-        <article class="card span-12">
-          <h2>Committed Public Snapshot</h2>
-          <div class="grid" style="margin-top: 8px;">
-            <div class="metric span-4">
-              <div class="tiny-label">Run ID</div>
-              <strong id="run-id">pending</strong>
-              <span>current committed pipeline run identifier</span>
-            </div>
-            <div class="metric span-4">
-              <div class="tiny-label">Quality Counts</div>
-              <strong id="quality-counts">0 / 0 / 0</strong>
-              <span>complete / partial / poor</span>
-            </div>
-            <div class="metric span-4">
-              <div class="tiny-label">Missing Ofsted</div>
-              <strong id="missing-ofsted-count">0</strong>
-              <span>records currently missing latest Ofsted context</span>
-            </div>
+          <div class="stat-card">
+            <strong id="stat-poor">—</strong>
+            <span>Poor quality records</span>
           </div>
-          <p id="snapshot-note" class="small">
-            This snapshot is intentionally narrow: it publishes current repo
-            state, not fabricated school data.
-          </p>
-        </article>
+          <div class="stat-card">
+            <strong id="stat-input-mode">—</strong>
+            <span>Input mode</span>
+          </div>
+          <div class="stat-card">
+            <strong id="stat-generated">—</strong>
+            <span>Last generated</span>
+          </div>
+        </div>
+      </div>
 
-        <article class="card span-6">
-          <h2>Run It Now</h2>
-          <h3>Sample Mode</h3>
-          <pre>PYTHONPATH=src python3 -m london_data_model.cli schools run --area KT19 --input-mode sample</pre>
-          <p class="small">
-            This runs successfully today but produces zero school rows because
-            the checked-in sample inputs are empty placeholders.
-          </p>
-        </article>
+      <!-- ── Borough grid ───────────────────────────────── -->
+      <div id="borough-section" style="display:none;">
+        <h2 class="section-heading">London Boroughs</h2>
+        <div class="borough-grid" id="borough-grid"></div>
+      </div>
 
-        <article class="card span-6">
-          <h2>Run It For Real</h2>
-          <h3>Official Mode</h3>
-          <pre>PYTHONPATH=src python3 -m london_data_model.cli schools run --area KT19 --input-mode official</pre>
-          <p class="small">
-            This is the command you will use once you place the official local
-            files at the configured paths in <code>data/raw/</code>.
+      <!-- ── Pilot area (KT19) ──────────────────────────── -->
+      <div id="pilot-section" style="display:none;">
+        <h2 class="section-heading">Pilot Area</h2>
+        <div class="pilot-card">
+          <div class="pilot-label">KT19 — Starting scope</div>
+          <p class="small" style="margin:4px 0 10px;">
+            KT19 was the first area used to test and validate the pipeline. It is a
+            postcode district within the Royal Borough of Kingston upon Thames (LA 314).
           </p>
-        </article>
+          <div id="kt19-stats"></div>
+        </div>
+      </div>
 
-        <article class="card span-12">
-          <h2>What You Need For The First Real Test</h2>
-          <ol>
-            <li>Place the official GIAS establishments file at <code>data/raw/gias_establishments.csv</code>.</li>
-            <li>Place the official Ofsted state-funded schools file at <code>data/raw/ofsted_state_funded_schools.csv</code>.</li>
-            <li>Confirm the real file headers match the configured column maps.</li>
-            <li>Run official mode from the CLI.</li>
-            <li>Inspect the generated CSV, JSON, summary, and manifest outputs.</li>
-          </ol>
-        </article>
+      <!-- ── Run commands ───────────────────────────────── -->
+      <h2 class="section-heading">Run the Pipeline</h2>
+      <div class="two-col">
+        <div class="card">
+          <h3>Single borough</h3>
+          <pre>ldm schools run --area barnet --input-mode official</pre>
+          <p class="small">Runs for any borough with a config in <code>configs/areas/</code>.</p>
+        </div>
+        <div class="card">
+          <h3>All London boroughs</h3>
+          <pre>ldm schools run --area london --input-mode official</pre>
+          <p class="small">Loads GIAS data once, filters per borough, publishes 33 output sets.</p>
+        </div>
+        <div class="card">
+          <h3>Borough subset</h3>
+          <pre>ldm schools run --area london \
+  --boroughs barnet,camden,islington \
+  --input-mode official</pre>
+          <p class="small">Comma-separated borough IDs.</p>
+        </div>
+        <div class="card">
+          <h3>KT19 pilot (sample mode)</h3>
+          <pre>ldm schools run --area KT19 --input-mode sample</pre>
+          <p class="small">Runs the original pilot area in sample mode.</p>
+        </div>
+      </div>
 
-        <article class="card span-12">
-          <h2>Expected GitHub Pages Link</h2>
-          <p>
-            If GitHub Pages is configured to serve the <code>docs/</code> folder
-            from <code>main</code>, this page should be available at:
-          </p>
-          <pre>https://kanwalnainsingh.github.io/London-Data-Model/</pre>
-          <p class="small">
-            If that URL does not load yet, enable Pages in the repository
-            settings and select the <code>main</code> branch with the
-            <code>/docs</code> folder.
-          </p>
-        </article>
-      </section>
+      <!-- ── Required files ─────────────────────────────── -->
+      <div class="card" style="margin-top: 4px;">
+        <h2>Required Local Data Files</h2>
+        <ol>
+          <li>Place the GIAS establishments CSV at <code>data/raw/gias_establishments.csv</code></li>
+          <li>Place the Ofsted state-funded schools CSV at <code>data/raw/ofsted_state_funded_schools.csv</code></li>
+          <li>Verify CSV headers match the configured column maps in <code>configs/pipeline/schools.yml</code></li>
+          <li>Run official mode — the pipeline filters by LA code per borough automatically</li>
+        </ol>
+        <div class="status-warn" id="blocker-box">
+          Official data files are not yet placed. All school counts show 0 until real files are provided.
+        </div>
+      </div>
     </main>
+
     <script>
-      const statusUrl = "./data/kt19-status.json";
-
-      function formatGeneratedAt(value) {
-        if (!value) {
-          return "pending";
-        }
-
-        const parsed = new Date(value);
-        if (Number.isNaN(parsed.getTime())) {
-          return value;
-        }
-
-        return parsed.toISOString().slice(0, 16).replace("T", " ");
+      function fmt(isoString) {
+        if (!isoString) return "—";
+        const d = new Date(isoString);
+        return isNaN(d) ? isoString : d.toISOString().slice(0, 10);
       }
 
-      function updateStatus(payload) {
-        const schoolCount = payload.school_count_total ?? 0;
-        const inputMode = payload.input_mode ?? "sample";
-        const generatedAt = formatGeneratedAt(payload.generated_at);
-        const qualityCounts = payload.quality_counts ?? {};
-        const searchPoint = payload.search_point ?? {};
+      function qualityPct(counts) {
+        const total = (counts.complete || 0) + (counts.partial || 0) + (counts.poor || 0);
+        if (total === 0) return 0;
+        return Math.round(((counts.complete || 0) / total) * 100);
+      }
 
-        document.getElementById("metric-school-count").textContent = String(schoolCount);
-        document.getElementById("metric-input-mode").textContent = inputMode;
-        document.getElementById("metric-generated-at").textContent = generatedAt;
-        document.getElementById("run-id").textContent = payload.run_id ?? "pending";
-        document.getElementById("quality-counts").textContent =
-          `${qualityCounts.complete ?? 0} / ${qualityCounts.partial ?? 0} / ${qualityCounts.poor ?? 0}`;
-        document.getElementById("missing-ofsted-count").textContent = String(
-          payload.missing_ofsted_count ?? 0
-        );
-        document.getElementById("search-point-method").textContent =
-          payload.search_point_method ?? "unresolved";
-        document.getElementById("search-point-latitude").textContent =
-          searchPoint.latitude ?? "unresolved";
-        document.getElementById("search-point-longitude").textContent =
-          searchPoint.longitude ?? "unresolved";
+      function qualityClass(pct) {
+        if (pct >= 80) return "q-good";
+        if (pct >= 50) return "q-warn";
+        return pct === 0 ? "" : "q-poor";
+      }
 
+      function badgeClass(pct, count) {
+        if (count === 0) return "badge-empty";
+        if (pct >= 80) return "badge-good";
+        if (pct >= 50) return "badge-warn";
+        return "badge-poor";
+      }
+
+      function badgeText(pct, count) {
+        if (count === 0) return "no data";
+        if (pct >= 80) return pct + "% complete";
+        if (pct >= 50) return pct + "% complete";
+        return pct + "% complete";
+      }
+
+      function renderBoroughCard(area) {
+        const pct = qualityPct(area.quality_counts || {});
+        const qClass = qualityClass(pct);
+        const bClass = badgeClass(pct, area.school_count);
+        const bText = badgeText(pct, area.school_count);
+        const href = area.status_url || "#";
+
+        return `<a class="borough-card" href="${href}" target="_blank" rel="noopener">
+          <div class="borough-name">${area.label}</div>
+          <div class="borough-count">${area.school_count}</div>
+          <div class="borough-count-label">schools</div>
+          <div class="quality-bar">
+            <div class="quality-bar-fill ${qClass}" style="width:${pct}%"></div>
+          </div>
+          <div class="quality-label">${pct}% complete records</div>
+          <span class="badge ${bClass}">${bText}</span>
+        </a>`;
+      }
+
+      function renderLondonDashboard(data) {
+        document.getElementById("loading-msg").style.display = "none";
+
+        // Summary stats
+        const q = data.quality_counts || {};
+        document.getElementById("stat-boroughs").textContent = data.borough_count || 0;
+        document.getElementById("stat-total-schools").textContent = (data.school_count_total || 0).toLocaleString();
+        document.getElementById("stat-complete").textContent = (q.complete || 0).toLocaleString();
+        document.getElementById("stat-partial").textContent = (q.partial || 0).toLocaleString();
+        document.getElementById("stat-poor").textContent = (q.poor || 0).toLocaleString();
+        document.getElementById("stat-input-mode").textContent = data.input_mode || "sample";
+        document.getElementById("stat-generated").textContent = fmt(data.generated_at);
+        document.getElementById("london-summary").style.display = "";
+
+        // Borough grid
+        const areas = (data.areas || []).filter(a => a.area_type === "borough");
+        if (areas.length > 0) {
+          document.getElementById("borough-grid").innerHTML = areas.map(renderBoroughCard).join("");
+          document.getElementById("borough-section").style.display = "";
+        }
+
+        // Pilot area: look for KT19 or kt19 in areas or fetch separately
+        const kt19Area = (data.areas || []).find(a => a.area_id && a.area_id.toLowerCase() === "kt19");
+        if (kt19Area) {
+          const pct = qualityPct(kt19Area.quality_counts || {});
+          document.getElementById("kt19-stats").innerHTML =
+            `<strong>${kt19Area.school_count}</strong> schools &nbsp;·&nbsp; ${pct}% complete`;
+          document.getElementById("pilot-section").style.display = "";
+        } else {
+          // Try fetching kt19 status directly
+          fetch("./data/kt19-status.json")
+            .then(r => r.ok ? r.json() : null)
+            .then(d => {
+              if (!d) return;
+              document.getElementById("kt19-stats").innerHTML =
+                `<strong>${d.school_count_total || 0}</strong> schools &nbsp;·&nbsp; input mode: ${d.input_mode || "sample"}`;
+              document.getElementById("pilot-section").style.display = "";
+            })
+            .catch(() => {});
+        }
+
+        // Update blocker box
+        const totalSchools = data.school_count_total || 0;
+        const inputMode = data.input_mode || "sample";
         const blockerBox = document.getElementById("blocker-box");
-        const dataStateBox = document.getElementById("data-state-box");
-        const snapshotNote = document.getElementById("snapshot-note");
-
-        if (schoolCount > 0 && inputMode === "official") {
-          blockerBox.textContent =
-            "The current committed artifact contains published KT19 school rows from an official-mode run.";
+        if (totalSchools > 0 && inputMode === "official") {
+          blockerBox.textContent = `Dashboard shows ${totalSchools.toLocaleString()} schools from an official-mode London run.`;
           blockerBox.className = "status-good";
         } else {
-          blockerBox.textContent =
-            "Real school rows are not committed yet because the repo does not contain the required local official source files.";
+          blockerBox.textContent = "Official data files are not yet placed. All school counts show 0 until real files are provided.";
           blockerBox.className = "status-warn";
         }
-
-        dataStateBox.innerHTML =
-          "The page reads a committed JSON snapshot generated from the current summary and manifest artifacts under <code>docs/data/</code>.";
-        snapshotNote.textContent =
-          schoolCount > 0
-            ? "This page is showing the latest committed KT19 artifact state."
-            : "This snapshot is intentionally narrow: it publishes current repo state, not fabricated school data.";
       }
 
-      fetch(statusUrl)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`Failed to load ${statusUrl}`);
-          }
-          return response.json();
-        })
-        .then(updateStatus)
-        .catch((error) => {
-          document.getElementById("data-state-box").textContent =
-            "The public snapshot could not be loaded yet. The page is showing the static fallback state.";
-          document.getElementById("snapshot-note").textContent = error.message;
+      function renderFallbackKt19(data) {
+        document.getElementById("loading-msg").style.display = "none";
+
+        // Show minimal stats from KT19 single-area status
+        const q = data.quality_counts || {};
+        document.getElementById("stat-boroughs").textContent = "1";
+        document.getElementById("stat-total-schools").textContent = data.school_count_total || 0;
+        document.getElementById("stat-complete").textContent = q.complete || 0;
+        document.getElementById("stat-partial").textContent = q.partial || 0;
+        document.getElementById("stat-poor").textContent = q.poor || 0;
+        document.getElementById("stat-input-mode").textContent = data.input_mode || "sample";
+        document.getElementById("stat-generated").textContent = fmt(data.generated_at);
+        document.getElementById("london-summary").style.display = "";
+
+        // KT19 pilot section
+        document.getElementById("kt19-stats").innerHTML =
+          `<strong>${data.school_count_total || 0}</strong> schools &nbsp;·&nbsp; input mode: ${data.input_mode || "sample"}<br>
+           <span style="font-size:12px;color:var(--muted);">London-wide index not yet generated. Showing KT19 pilot data only.</span>`;
+        document.getElementById("pilot-section").style.display = "";
+      }
+
+      // Load London index; fall back to KT19
+      fetch("./data/london-index.json")
+        .then(r => r.ok ? r.json() : Promise.reject(new Error("No London index")))
+        .then(renderLondonDashboard)
+        .catch(() => {
+          fetch("./data/kt19-status.json")
+            .then(r => r.ok ? r.json() : Promise.reject(new Error("No KT19 data")))
+            .then(renderFallbackKt19)
+            .catch(err => {
+              document.getElementById("loading-msg").textContent =
+                "Dashboard data not available yet. Run the pipeline to generate data. (" + err.message + ")";
+            });
         });
     </script>
   </body>

@@ -1,0 +1,7 @@
+area_id: newham
+area_type: borough
+label: London Borough of Newham
+la_code: 316
+search_point_method: borough_centroid
+latitude: 51.5255
+longitude: 0.0352

@@ -1,0 +1,7 @@
+area_id: camden
+area_type: borough
+label: London Borough of Camden
+la_code: 202
+search_point_method: borough_centroid
+latitude: 51.5290
+longitude: -0.1255

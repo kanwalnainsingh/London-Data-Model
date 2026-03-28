@@ -1,0 +1,7 @@
+area_id: waltham-forest
+area_type: borough
+label: London Borough of Waltham Forest
+la_code: 320
+search_point_method: borough_centroid
+latitude: 51.5886
+longitude: -0.0118

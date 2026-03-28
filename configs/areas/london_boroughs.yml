@@ -1,0 +1,168 @@
+region_id: london
+region_label: Greater London
+boroughs:
+  city-of-london:
+    la_code: 201
+    label: City of London
+    latitude: 51.5155
+    longitude: -0.0922
+  camden:
+    la_code: 202
+    label: London Borough of Camden
+    latitude: 51.5290
+    longitude: -0.1255
+  greenwich:
+    la_code: 203
+    label: Royal Borough of Greenwich
+    latitude: 51.4892
+    longitude: 0.0648
+  hackney:
+    la_code: 204
+    label: London Borough of Hackney
+    latitude: 51.5450
+    longitude: -0.0553
+  hammersmith-and-fulham:
+    la_code: 205
+    label: London Borough of Hammersmith and Fulham
+    latitude: 51.4927
+    longitude: -0.2239
+  islington:
+    la_code: 206
+    label: London Borough of Islington
+    latitude: 51.5416
+    longitude: -0.1022
+  kensington-and-chelsea:
+    la_code: 207
+    label: Royal Borough of Kensington and Chelsea
+    latitude: 51.5020
+    longitude: -0.1947
+  lambeth:
+    la_code: 208
+    label: London Borough of Lambeth
+    latitude: 51.4571
+    longitude: -0.1231
+  lewisham:
+    la_code: 209
+    label: London Borough of Lewisham
+    latitude: 51.4415
+    longitude: -0.0117
+  southwark:
+    la_code: 210
+    label: London Borough of Southwark
+    latitude: 51.4733
+    longitude: -0.0763
+  tower-hamlets:
+    la_code: 211
+    label: London Borough of Tower Hamlets
+    latitude: 51.5150
+    longitude: -0.0172
+  wandsworth:
+    la_code: 212
+    label: London Borough of Wandsworth
+    latitude: 51.4567
+    longitude: -0.1910
+  westminster:
+    la_code: 213
+    label: City of Westminster
+    latitude: 51.4975
+    longitude: -0.1357
+  barking-and-dagenham:
+    la_code: 301
+    label: London Borough of Barking and Dagenham
+    latitude: 51.5397
+    longitude: 0.1313
+  barnet:
+    la_code: 302
+    label: London Borough of Barnet
+    latitude: 51.6252
+    longitude: -0.1517
+  bexley:
+    la_code: 303
+    label: London Borough of Bexley
+    latitude: 51.4549
+    longitude: 0.1505
+  brent:
+    la_code: 304
+    label: London Borough of Brent
+    latitude: 51.5588
+    longitude: -0.2817
+  bromley:
+    la_code: 305
+    label: London Borough of Bromley
+    latitude: 51.4039
+    longitude: 0.0198
+  croydon:
+    la_code: 306
+    label: London Borough of Croydon
+    latitude: 51.3762
+    longitude: -0.0982
+  ealing:
+    la_code: 307
+    label: London Borough of Ealing
+    latitude: 51.5130
+    longitude: -0.3089
+  enfield:
+    la_code: 308
+    label: London Borough of Enfield
+    latitude: 51.6538
+    longitude: -0.0799
+  haringey:
+    la_code: 309
+    label: London Borough of Haringey
+    latitude: 51.5906
+    longitude: -0.1110
+  harrow:
+    la_code: 310
+    label: London Borough of Harrow
+    latitude: 51.5898
+    longitude: -0.3346
+  havering:
+    la_code: 311
+    label: London Borough of Havering
+    latitude: 51.5779
+    longitude: 0.2120
+  hillingdon:
+    la_code: 312
+    label: London Borough of Hillingdon
+    latitude: 51.5441
+    longitude: -0.4760
+  hounslow:
+    la_code: 313
+    label: London Borough of Hounslow
+    latitude: 51.4746
+    longitude: -0.3680
+  kingston-upon-thames:
+    la_code: 314
+    label: Royal Borough of Kingston upon Thames
+    latitude: 51.3925
+    longitude: -0.3057
+  merton:
+    la_code: 315
+    label: London Borough of Merton
+    latitude: 51.4098
+    longitude: -0.1949
+  newham:
+    la_code: 316
+    label: London Borough of Newham
+    latitude: 51.5255
+    longitude: 0.0352
+  redbridge:
+    la_code: 317
+    label: London Borough of Redbridge
+    latitude: 51.5590
+    longitude: 0.0741
+  richmond-upon-thames:
+    la_code: 318
+    label: London Borough of Richmond upon Thames
+    latitude: 51.4613
+    longitude: -0.3037
+  sutton:
+    la_code: 319
+    label: London Borough of Sutton
+    latitude: 51.3618
+    longitude: -0.1945
+  waltham-forest:
+    la_code: 320
+    label: London Borough of Waltham Forest
+    latitude: 51.5886
+    longitude: -0.0118

@@ -1,0 +1,7 @@
+area_id: bromley
+area_type: borough
+label: London Borough of Bromley
+la_code: 305
+search_point_method: borough_centroid
+latitude: 51.4039
+longitude: 0.0198

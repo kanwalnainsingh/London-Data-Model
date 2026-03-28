@@ -1,0 +1,7 @@
+area_id: wandsworth
+area_type: borough
+label: London Borough of Wandsworth
+la_code: 212
+search_point_method: borough_centroid
+latitude: 51.4567
+longitude: -0.1910

@@ -1,0 +1,7 @@
+area_id: redbridge
+area_type: borough
+label: London Borough of Redbridge
+la_code: 317
+search_point_method: borough_centroid
+latitude: 51.5590
+longitude: 0.0741

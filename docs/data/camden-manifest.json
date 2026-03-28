@@ -1,0 +1,30 @@
+{
+  "run_id": "48387286ed22",
+  "pipeline_name": "schools",
+  "pipeline_version": 1,
+  "area_id": "camden",
+  "search_point_method": "borough_centroid",
+  "search_point": {
+    "latitude": 51.529,
+    "longitude": -0.1255
+  },
+  "record_counts": {
+    "published": 0
+  },
+  "quality_counts": {
+    "complete": 0,
+    "partial": 0,
+    "poor": 0
+  },
+  "notes": [
+    "Sample mode: no records loaded for multi-borough run.",
+    "Filtered to LA code 202 (0 records).",
+    "Distance, accessibility band, and proximity score are now applied when coordinates are present.",
+    "Transform applies V1 scope filters for mainstream, open primary/secondary/all-through schools.",
+    "Validation applies deterministic data quality flags and status mapping."
+  ],
+  "public_artifacts": {
+    "status_json": "./data/camden-status.json",
+    "summary_json": "./data/camden-summary.json"
+  }
+}

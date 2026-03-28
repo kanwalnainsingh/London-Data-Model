@@ -1,0 +1,7 @@
+area_id: merton
+area_type: borough
+label: London Borough of Merton
+la_code: 315
+search_point_method: borough_centroid
+latitude: 51.4098
+longitude: -0.1949

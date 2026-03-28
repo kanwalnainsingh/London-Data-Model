@@ -1,5 +1,5 @@
 {
-  "area_id": "KT19",
+  "area_id": "barnet",
   "school_count_total": 0,
   "school_count_by_phase": {},
   "school_count_by_accessibility_band": {},
@@ -9,5 +9,5 @@
     "poor": 0
   },
   "missing_ofsted_count": 0,
-  "generated_at": "2026-03-28T07:23:09.997711+00:00"
+  "generated_at": "2026-03-28T07:05:41.131746+00:00"
 }

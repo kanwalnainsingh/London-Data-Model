@@ -1,0 +1,7 @@
+area_id: tower-hamlets
+area_type: borough
+label: London Borough of Tower Hamlets
+la_code: 211
+search_point_method: borough_centroid
+latitude: 51.5150
+longitude: -0.0172

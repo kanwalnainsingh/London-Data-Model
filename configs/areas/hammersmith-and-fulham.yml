@@ -1,0 +1,7 @@
+area_id: hammersmith-and-fulham
+area_type: borough
+label: London Borough of Hammersmith and Fulham
+la_code: 205
+search_point_method: borough_centroid
+latitude: 51.4927
+longitude: -0.2239

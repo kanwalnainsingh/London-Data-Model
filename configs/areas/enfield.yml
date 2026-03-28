@@ -1,0 +1,7 @@
+area_id: enfield
+area_type: borough
+label: London Borough of Enfield
+la_code: 308
+search_point_method: borough_centroid
+latitude: 51.6538
+longitude: -0.0799

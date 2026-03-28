@@ -4,7 +4,7 @@ import csv
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from london_data_model.settings import PROJECT_ROOT
 from london_data_model.types import ExtractResult, PipelineContext, SourceDescriptor
@@ -153,6 +153,15 @@ def _merge_records(
     return merged
 
 
+def filter_by_la_codes(
+    records: List[Dict[str, Any]],
+    la_codes: List[int],
+) -> List[Dict[str, Any]]:
+    """Keep only records whose la_code matches the target set."""
+    target = {str(code) for code in la_codes}
+    return [r for r in records if str(r.get("la_code", "")).strip() in target]
+
+
 def _extract_sample_input(context: PipelineContext) -> ExtractResult:
     sample_input = context.pipeline_config.get("sample_input", {})
     schools_path = _resolve_input_path(sample_input.get("schools_path"))
@@ -184,8 +193,15 @@ def _extract_sample_input(context: PipelineContext) -> ExtractResult:
     return ExtractResult(records=schools_records, sources=sources, notes=notes)
 
 
-def _extract_official_input(context: PipelineContext) -> ExtractResult:
-    official_input = context.pipeline_config.get("official_input", {})
+def load_official_records(
+    pipeline_config: Dict[str, Any],
+) -> Tuple[List[Dict[str, Any]], List[SourceDescriptor], List[str]]:
+    """Load, map, and merge GIAS + Ofsted records without area filtering.
+
+    Returns (merged_records, sources, notes).
+    Used by both single-area extract and multi-borough orchestrator.
+    """
+    official_input = pipeline_config.get("official_input", {})
     schools_path = _resolve_input_path(official_input.get("schools_path"))
     ofsted_path = _resolve_input_path(official_input.get("ofsted_path"))
     schools_format = str(official_input.get("schools_format", "csv")).lower()
@@ -230,7 +246,21 @@ def _extract_official_input(context: PipelineContext) -> ExtractResult:
             notes=["Configured as the local Ofsted state-funded schools inspection file export."],
         ),
     ]
-    return ExtractResult(records=merged_records, sources=sources, notes=notes)
+    return merged_records, sources, notes
+
+
+def _extract_official_input(context: PipelineContext) -> ExtractResult:
+    records, sources, notes = load_official_records(context.pipeline_config)
+
+    if context.area_config.la_code is not None:
+        records = filter_by_la_codes(records, [context.area_config.la_code])
+        notes = list(notes) + [
+            "Filtered to LA code {0} ({1} records).".format(
+                context.area_config.la_code, len(records)
+            )
+        ]
+
+    return ExtractResult(records=records, sources=sources, notes=notes)
 
 
 def extract(context: PipelineContext) -> ExtractResult:

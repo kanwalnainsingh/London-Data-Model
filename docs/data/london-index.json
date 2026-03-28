@@ -1,0 +1,40 @@
+{
+  "region_id": "london",
+  "generated_at": "2026-03-28T07:05:41.136982+00:00",
+  "input_mode": "sample",
+  "borough_count": 2,
+  "school_count_total": 0,
+  "quality_counts": {
+    "complete": 0,
+    "partial": 0,
+    "poor": 0
+  },
+  "areas": [
+    {
+      "area_id": "barnet",
+      "label": "London Borough of Barnet",
+      "area_type": "borough",
+      "la_code": 302,
+      "school_count": 0,
+      "quality_counts": {
+        "complete": 0,
+        "partial": 0,
+        "poor": 0
+      },
+      "status_url": "./data/barnet-status.json"
+    },
+    {
+      "area_id": "camden",
+      "label": "London Borough of Camden",
+      "area_type": "borough",
+      "la_code": 202,
+      "school_count": 0,
+      "quality_counts": {
+        "complete": 0,
+        "partial": 0,
+        "poor": 0
+      },
+      "status_url": "./data/camden-status.json"
+    }
+  ]
+}

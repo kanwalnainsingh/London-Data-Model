@@ -1,0 +1,29 @@
+{
+  "area_id": "barnet",
+  "pipeline_name": "schools",
+  "pipeline_version": 1,
+  "run_id": "0bb249eead56",
+  "generated_at": "2026-03-28T07:05:41.131746+00:00",
+  "input_mode": "sample",
+  "school_count_total": 0,
+  "school_count_by_phase": {},
+  "school_count_by_accessibility_band": {},
+  "quality_counts": {
+    "complete": 0,
+    "partial": 0,
+    "poor": 0
+  },
+  "missing_ofsted_count": 0,
+  "search_point_method": "borough_centroid",
+  "search_point": {
+    "latitude": 51.6252,
+    "longitude": -0.1517
+  },
+  "notes": [
+    "Sample mode: no records loaded for multi-borough run.",
+    "Filtered to LA code 302 (0 records).",
+    "Distance, accessibility band, and proximity score are now applied when coordinates are present.",
+    "Transform applies V1 scope filters for mainstream, open primary/secondary/all-through schools.",
+    "Validation applies deterministic data quality flags and status mapping."
+  ]
+}
