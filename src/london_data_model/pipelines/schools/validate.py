@@ -25,8 +25,6 @@ def derive_data_quality_flags(record: SchoolRecord) -> List[str]:
         flags.append("missing_ofsted_rating")
     if not record.ofsted_inspection_date_latest:
         flags.append("missing_inspection_date")
-    if not record.ofsted_report_url:
-        flags.append("missing_ofsted_report_url")
     if record.distance_km is None and record.latitude is not None and record.longitude is not None:
         flags.append("distance_estimated")
 

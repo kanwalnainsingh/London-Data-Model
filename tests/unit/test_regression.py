@@ -37,6 +37,7 @@ class GoldenPipelineRegressionTestCase(unittest.TestCase):
                     "ofsted_format": "csv",
                     "merge_key": "school_urn",
                     "schools_column_map": {
+                        "la_code": "LA (code)",
                         "school_urn": "URN",
                         "school_name": "EstablishmentName",
                         "address_line_1": "Street",
@@ -102,7 +103,6 @@ class GoldenPipelineRegressionTestCase(unittest.TestCase):
         self.assertEqual(records_payload[1]["data_quality_flags"], [
             "missing_ofsted_rating",
             "missing_inspection_date",
-            "missing_ofsted_report_url",
         ])
 
         self.assertEqual(manifest_payload["input_mode"], "official")

@@ -144,10 +144,9 @@ class TestLoadAreaConfigWithLaCode(unittest.TestCase):
         config = load_area_config(area="camden")
         self.assertEqual(config.la_code, 202)
 
-    def test_kt19_has_no_la_code(self):
-        """KT19 has no la_code — backward compatibility."""
+    def test_kt19_has_la_code(self):
         config = load_area_config(area="KT19")
-        self.assertIsNone(config.la_code)
+        self.assertEqual(config.la_code, 319)
 
     def test_kingston_upon_thames_la_code(self):
         config = load_area_config(area="kingston-upon-thames")

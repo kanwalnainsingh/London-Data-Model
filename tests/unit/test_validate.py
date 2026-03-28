@@ -48,7 +48,7 @@ class ValidateRulesTestCase(unittest.TestCase):
 
         self.assertIn("missing_ofsted_rating", flags)
         self.assertIn("missing_inspection_date", flags)
-        self.assertIn("missing_ofsted_report_url", flags)
+        self.assertNotIn("missing_ofsted_report_url", flags)
 
     def test_derive_data_quality_status_marks_critical_flags_as_poor(self) -> None:
         status = derive_data_quality_status(["missing_coordinates"])

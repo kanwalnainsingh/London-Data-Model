@@ -3,11 +3,13 @@ primary:
   close_max_km: 2
   moderate_max_km: 4
   proximity_zero_at_km: 6
+  max_distance_km: 6
 secondary:
   very_close_max_km: 2
   close_max_km: 5
   moderate_max_km: 8
   proximity_zero_at_km: 10
+  max_distance_km: 10
 all_through:
   threshold_profile: secondary
   proximity_profile: secondary

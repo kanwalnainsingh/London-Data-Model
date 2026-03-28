@@ -9,6 +9,12 @@ from london_data_model.types import ExtractResult, PipelineContext, SchoolRecord
 
 LOGGER = logging.getLogger(__name__)
 EARTH_RADIUS_KM = 6371.0
+_OFSTED_RATING_MAP = {
+    "1": "Outstanding",
+    "2": "Good",
+    "3": "Requires improvement",
+    "4": "Inadequate",
+}
 EXCLUDED_ESTABLISHMENT_TERMS = (
     "independent",
     "private",
@@ -65,6 +71,18 @@ def is_in_scope_school(record: SchoolRecord) -> bool:
     if not is_mainstream_establishment(record.establishment_type):
         return False
     return True
+
+
+def is_within_max_distance(record: SchoolRecord, threshold_config: Dict[str, Any]) -> bool:
+    if record.distance_km is None:
+        return True
+    profile = resolve_threshold_profile(record.phase, threshold_config)
+    if profile is None:
+        return True
+    max_km = threshold_config.get(profile, {}).get("max_distance_km")
+    if max_km is None:
+        return True
+    return record.distance_km <= float(max_km)
 
 
 def resolve_threshold_profile(phase: Optional[str], threshold_config: Dict[str, Any]) -> Optional[str]:
@@ -182,7 +200,10 @@ def build_school_record(raw_record: Dict[str, Any], context: PipelineContext) ->
             distance_km=distance_km,
             threshold_config=context.threshold_config,
         ),
-        ofsted_rating_latest=raw_record.get("ofsted_rating_latest"),
+        ofsted_rating_latest=_OFSTED_RATING_MAP.get(
+            str(raw_record.get("ofsted_rating_latest") or "").strip(),
+            raw_record.get("ofsted_rating_latest"),
+        ),
         ofsted_inspection_date_latest=raw_record.get("ofsted_inspection_date_latest"),
         ofsted_report_url=raw_record.get("ofsted_report_url"),
     )
@@ -200,7 +221,7 @@ def transform(extracted: ExtractResult, context: PipelineContext) -> TransformRe
     excluded_record_count = 0
     for raw_record in extracted.records:
         record = build_school_record(raw_record=raw_record, context=context)
-        if is_in_scope_school(record):
+        if is_in_scope_school(record) and is_within_max_distance(record, context.threshold_config):
             records.append(record)
         else:
             excluded_record_count += 1
