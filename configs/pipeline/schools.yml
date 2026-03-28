@@ -14,6 +14,18 @@ official_input:
   ofsted_path: data/raw/ofsted_state_funded_schools.csv
   ofsted_format: csv
   merge_key: school_urn
+  fetch:
+    # Auto-downloads source files when running in official mode.
+    # Set skip_if_exists: true (default) to reuse files already in data/raw/.
+    # Delete the files in data/raw/ to force a fresh download.
+    skip_if_exists: true
+    # GIAS: leave blank to auto-use today's dated export URL.
+    # Override if the auto-URL fails (check get-information-schools.service.gov.uk/Downloads).
+    schools_url:
+    # Ofsted: leave blank to auto-resolve from the publications page.
+    # Set to a direct ODS URL to skip page resolution (update when Ofsted republishes).
+    ofsted_publications_url: https://www.gov.uk/government/publications/five-year-ofsted-inspection-data
+    ofsted_url:
   schools_column_map:
     la_code: "LA (code)"
     school_urn: URN

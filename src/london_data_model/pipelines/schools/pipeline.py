@@ -8,6 +8,8 @@ from typing import Dict, Optional
 
 from london_data_model.pipelines.schools.extract import OfficialSourceConfigError
 from london_data_model.pipelines.schools.extract import extract
+from london_data_model.pipelines.schools.fetch import FetchError
+from london_data_model.pipelines.schools.fetch import fetch
 from london_data_model.pipelines.schools.publish import publish
 from london_data_model.pipelines.schools.transform import transform
 from london_data_model.pipelines.schools.validate import validate
@@ -38,8 +40,24 @@ def _build_pipeline_config(base_config: Dict[str, object], input_mode: Optional[
     return config
 
 
+def _is_official_mode(pipeline_config: Dict[str, object]) -> bool:
+    return str(pipeline_config.get("input_mode", "sample")).lower() == "official"
+
+
+def _fetch_official_sources(pipeline_config: Dict[str, object]) -> None:
+    official_input = pipeline_config.get("official_input", {})
+    schools_dest = _resolve_input_path(str(official_input.get("schools_path")))
+    ofsted_dest = _resolve_input_path(str(official_input.get("ofsted_path")))
+    try:
+        result = fetch(pipeline_config, schools_dest, ofsted_dest)
+        for note in result.notes:
+            LOGGER.info("fetch: %s", note)
+    except FetchError as exc:
+        raise OfficialSourceConfigError(str(exc)) from exc
+
+
 def _preflight_official_mode(pipeline_config: Dict[str, object]) -> None:
-    if str(pipeline_config.get("input_mode", "sample")).lower() != "official":
+    if not _is_official_mode(pipeline_config):
         return
 
     official_input = pipeline_config.get("official_input", {})
@@ -64,6 +82,8 @@ def run(
     area_config = load_area_config(area=area, config_path=config_path)
     pipeline_config = _build_pipeline_config(load_pipeline_config(), input_mode=input_mode)
     threshold_config = load_threshold_config()
+    if _is_official_mode(pipeline_config):
+        _fetch_official_sources(pipeline_config)
     _preflight_official_mode(pipeline_config)
     context = PipelineContext(
         pipeline_name="schools",

@@ -93,8 +93,13 @@ class CliTestCase(unittest.TestCase):
         self.assertEqual(len(public_manifest_payload["input_sources"]), 2)
 
     def test_pipeline_run_raises_clear_error_for_missing_official_files(self) -> None:
-        with self.assertRaises(OfficialSourceConfigError) as error:
-            run_pipeline(area="KT19", input_mode="official")
+        # Fetch is skipped (files don't exist and skip_if_exists=False would download;
+        # here we patch fetch to do nothing so preflight still catches missing files).
+        with patch(
+            "london_data_model.pipelines.schools.pipeline._fetch_official_sources"
+        ):
+            with self.assertRaises(OfficialSourceConfigError) as error:
+                run_pipeline(area="KT19", input_mode="official")
 
         self.assertIn("Official mode requires local source files", str(error.exception))
 
