@@ -1,22 +1,33 @@
-PYTHON ?= python3
+PYTHON  ?= python3
 BOROUGH ?= barnet
+VENV    := .venv
+PY      := $(VENV)/bin/python
+LDM     := $(VENV)/bin/ldm
+PYTEST  := $(VENV)/bin/pytest
 
-.PHONY: install-dev test run-schools run-london run-borough
+.PHONY: venv install-dev test run-schools run-london run-borough clean
 
-install-dev:
-	$(PYTHON) -m pip install -e .[dev]
+venv:
+	$(PYTHON) -m venv $(VENV)
+	$(PY) -m pip install --upgrade pip -q
+
+install-dev: venv
+	$(PY) -m pip install -e .[dev]
 
 test:
-	pytest
+	$(PYTEST)
 
 # KT19 pilot area (sample mode)
 run-schools:
-	ldm schools run --area KT19
+	$(LDM) schools run --area KT19
 
 # All 33 London boroughs (official mode)
 run-london:
-	ldm schools run --area london --input-mode official
+	$(LDM) schools run --area london --input-mode official
 
 # Single borough (official mode). Override with: make run-borough BOROUGH=camden
 run-borough:
-	ldm schools run --area $(BOROUGH) --input-mode official
+	$(LDM) schools run --area $(BOROUGH) --input-mode official
+
+clean:
+	rm -rf $(VENV) data/marts/* data/manifests/*

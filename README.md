@@ -58,48 +58,46 @@ tests/
 
 ## Getting Started
 
-Create and activate a virtual environment:
+**Requires Python 3.8+.** Check with `python3 --version`.
+
+### Quickstart (recommended)
+
+The Makefile handles everything — no manual venv activation needed:
+
+```bash
+make install-dev   # creates .venv and installs the package + dev deps
+make test          # runs the full test suite (28 tests)
+make run-schools   # runs the KT19 sample pipeline
+```
+
+### Manual setup (alternative)
+
+If you prefer to manage the venv yourself:
 
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate
-```
+source .venv/bin/activate          # macOS / Linux
+# .venv\Scripts\activate           # Windows
 
-Install the project:
-
-```bash
 pip install -e .[dev]
+
+ldm schools run --area KT19        # run the pipeline
+pytest                             # run tests
 ```
 
-Run the CLI stub:
+> All `ldm` and `pytest` commands require either the venv to be activated or using the `make` targets above (which use `.venv/bin/` paths directly).
+
+### What the sample run does
+
+`make run-schools` uses placeholder JSON files in `data/raw/` so the pipeline runs end-to-end without real school records. Outputs go to `data/marts/` and `data/manifests/`.
+
+To switch to real data, update `input_mode` in `configs/pipeline/schools.yml` from `sample` to `official`, place the official source files under `data/raw/`, then:
 
 ```bash
-ldm schools run --area KT19
+ldm schools run --area KT19 --input-mode official
 ```
 
-Run the checked-in KT19 sample pipeline:
-
-```bash
-PYTHONPATH=src python3 -m london_data_model.cli schools run --area KT19
-```
-
-This sample run uses placeholder JSON input files in `data/raw/` so the pipeline can execute end to end without inventing official school records.
-
-To switch to local official source files, update `input_mode` in `configs/pipeline/schools.yml` from `sample` to `official` and place the configured files under `data/raw/`.
-
-You can also override the configured mode directly from the CLI:
-
-```bash
-PYTHONPATH=src python3 -m london_data_model.cli schools run --area KT19 --input-mode official
-```
-
-The current KT19 area config uses explicit configured coordinates in [`configs/areas/kt19.yml`](configs/areas/kt19.yml). For the MVP, this is the chosen repeatable district-level search point method. It is intentionally labeled as configured user-supplied coordinates, not as an asserted official centroid.
-
-Run tests:
-
-```bash
-python3 -m unittest discover -s tests -p 'test_*.py' -v
-```
+The KT19 area config uses explicit configured coordinates in [`configs/areas/kt19.yml`](configs/areas/kt19.yml). It is intentionally labeled as configured user-supplied coordinates, not an asserted official centroid.
 
 ## Development Principles
 
