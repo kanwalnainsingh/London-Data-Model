@@ -389,17 +389,22 @@
         </div>
       </div>
 
-      <!-- ── Required files ─────────────────────────────── -->
+      <!-- ── Data sources ────────────────────────────────── -->
       <div class="card" style="margin-top: 4px;">
-        <h2>Required Local Data Files</h2>
-        <ol>
-          <li>Place the GIAS establishments CSV at <code>data/raw/gias_establishments.csv</code></li>
-          <li>Place the Ofsted state-funded schools CSV at <code>data/raw/ofsted_state_funded_schools.csv</code></li>
-          <li>Verify CSV headers match the configured column maps in <code>configs/pipeline/schools.yml</code></li>
-          <li>Run official mode — the pipeline filters by LA code per borough automatically</li>
-        </ol>
-        <div class="status-warn" id="blocker-box">
-          Official data files are not yet placed. All school counts show 0 until real files are provided.
+        <h2>Data Sources</h2>
+        <p class="small">Official data is downloaded automatically when you run in official mode — no manual file placement needed.</p>
+        <div class="two-col" style="margin-top:0;">
+          <div>
+            <div class="tiny-label">GIAS — Get Information About Schools</div>
+            <p class="small" style="margin:4px 0;">Department for Education establishment register. Downloaded fresh each run from the DfE open-data endpoint.</p>
+          </div>
+          <div>
+            <div class="tiny-label">Ofsted — Five-year inspection data</div>
+            <p class="small" style="margin:4px 0;">Latest Ofsted state-funded school inspection results. Auto-resolved from the GOV.UK publications page each run.</p>
+          </div>
+        </div>
+        <div class="status-good" id="blocker-box" style="margin-top:14px;">
+          Pipeline auto-downloads GIAS and Ofsted data. Run <code>ldm schools run --area KT19 --input-mode official</code> to generate fresh data.
         </div>
       </div>
     </main>
@@ -497,16 +502,14 @@
             .catch(() => {});
         }
 
-        // Update blocker box
+        // Update data sources box with live run stats
         const totalSchools = data.school_count_total || 0;
         const inputMode = data.input_mode || "sample";
+        const lq = data.quality_counts || {};
         const blockerBox = document.getElementById("blocker-box");
         if (totalSchools > 0 && inputMode === "official") {
-          blockerBox.textContent = `Dashboard shows ${totalSchools.toLocaleString()} schools from an official-mode London run.`;
+          blockerBox.innerHTML = `London data: <strong>${totalSchools.toLocaleString()} schools</strong> across ${data.borough_count || 0} boroughs — ${(lq.complete||0).toLocaleString()} complete, ${(lq.partial||0).toLocaleString()} partial. Generated ${fmt(data.generated_at)}.`;
           blockerBox.className = "status-good";
-        } else {
-          blockerBox.textContent = "Official data files are not yet placed. All school counts show 0 until real files are provided.";
-          blockerBox.className = "status-warn";
         }
       }
 
@@ -532,10 +535,10 @@
            <span style="font-size:12px;color:var(--muted);">London-wide index not yet generated. Showing KT19 pilot data only.</span>`;
         document.getElementById("pilot-section").style.display = "";
 
-        // Update blocker box based on KT19 data
+        // Update data sources box with live run stats
         const blockerBox = document.getElementById("blocker-box");
         if (total > 0 && mode === "official") {
-          blockerBox.textContent = `KT19 pilot: ${total} schools from official-mode run. ${q.complete || 0} complete, ${q.partial || 0} partial.`;
+          blockerBox.innerHTML = `KT19 pilot data: <strong>${total} schools</strong> — ${q.complete || 0} complete, ${q.partial || 0} partial, ${q.poor || 0} poor. Generated ${fmt(data.generated_at)}.`;
           blockerBox.className = "status-good";
         }
       }
