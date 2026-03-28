@@ -515,20 +515,29 @@
 
         // Show minimal stats from KT19 single-area status
         const q = data.quality_counts || {};
+        const total = data.school_count_total || 0;
+        const mode = data.input_mode || "sample";
         document.getElementById("stat-boroughs").textContent = "1";
-        document.getElementById("stat-total-schools").textContent = data.school_count_total || 0;
+        document.getElementById("stat-total-schools").textContent = total;
         document.getElementById("stat-complete").textContent = q.complete || 0;
         document.getElementById("stat-partial").textContent = q.partial || 0;
         document.getElementById("stat-poor").textContent = q.poor || 0;
-        document.getElementById("stat-input-mode").textContent = data.input_mode || "sample";
+        document.getElementById("stat-input-mode").textContent = mode;
         document.getElementById("stat-generated").textContent = fmt(data.generated_at);
         document.getElementById("london-summary").style.display = "";
 
         // KT19 pilot section
         document.getElementById("kt19-stats").innerHTML =
-          `<strong>${data.school_count_total || 0}</strong> schools &nbsp;·&nbsp; input mode: ${data.input_mode || "sample"}<br>
+          `<strong>${total}</strong> schools &nbsp;·&nbsp; input mode: ${mode}<br>
            <span style="font-size:12px;color:var(--muted);">London-wide index not yet generated. Showing KT19 pilot data only.</span>`;
         document.getElementById("pilot-section").style.display = "";
+
+        // Update blocker box based on KT19 data
+        const blockerBox = document.getElementById("blocker-box");
+        if (total > 0 && mode === "official") {
+          blockerBox.textContent = `KT19 pilot: ${total} schools from official-mode run. ${q.complete || 0} complete, ${q.partial || 0} partial.`;
+          blockerBox.className = "status-good";
+        }
       }
 
       // Load London index; fall back to KT19
