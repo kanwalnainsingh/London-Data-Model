@@ -22,18 +22,20 @@ from london_data_model.pipelines.schools.transform import (
     normalize_phase,
     transform,
 )
+from london_data_model.pipelines.schools.fetch import fetch as _fetch_sources
 from london_data_model.pipelines.schools.validate import validate
 from london_data_model.pipelines.schools.pipeline import (
     _build_pipeline_config,
     _preflight_official_mode,
 )
-from london_data_model.settings import DOCS_DATA_DIR
+from london_data_model.settings import DOCS_DATA_DIR, PROJECT_ROOT
 from london_data_model.types import (
     AreaConfig,
     ExtractResult,
     PipelineContext,
     PipelineResult,
     PublishResult,
+    SourceProvenance,
     ValidateResult,
 )
 from london_data_model.utils.config import (
@@ -136,11 +138,40 @@ def _add_fringe_schools(
     return added
 
 
+def _write_sources_json(
+    provenances: List[SourceProvenance],
+    pipeline_config: Dict[str, Any],
+) -> None:
+    """Write docs/data/sources.json with full data-lineage metadata for all sources.
+
+    The file records:
+    - What every raw data source is (label, publisher, licence, update frequency)
+    - Where the file was fetched from (URL)
+    - When the file was last written to disk (proxy for fetch time)
+    - How large the file is
+    - What date the source data represents (extracted from URL/filename where possible)
+    - Which fields from each source the pipeline actually uses
+
+    This lets the GitHub Pages dashboard show parents exactly how fresh the
+    underlying data is and where it came from.
+    """
+    DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "input_mode": pipeline_config.get("input_mode", "sample"),
+        "sources": [p.to_dict() for p in provenances],
+    }
+    path = DOCS_DATA_DIR / "sources.json"
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    LOGGER.info("Written data-lineage manifest: %s (%d sources)", path, len(provenances))
+
+
 def _publish_london_index(
     borough_results: List[Tuple[AreaConfig, PublishResult, ValidateResult]],
     pipeline_config: Dict[str, Any],
     all_records: Optional[List[Dict[str, Any]]] = None,
     threshold_config: Optional[Dict[str, Any]] = None,
+    provenances: Optional[List[SourceProvenance]] = None,
 ) -> None:
     """Write London-wide index and combined schools JSON to docs/data/."""
     areas = []
@@ -212,6 +243,10 @@ def _publish_london_index(
         len(combined_schools),
     )
 
+    # Write data-lineage manifest with source provenance
+    if provenances:
+        _write_sources_json(provenances, pipeline_config)
+
 
 def run_london(
     boroughs: Optional[str] = None,
@@ -244,7 +279,18 @@ def run_london(
 
     # Load GIAS + Ofsted data once for all boroughs
     input_mode_effective = str(pipeline_config.get("input_mode", "sample")).lower()
+    fetch_provenances = []
     if input_mode_effective == "official":
+        # Run fetch (skips if files already exist) to collect per-source provenance
+        official_input = pipeline_config.get("official_input", {})
+        schools_dest = PROJECT_ROOT / str(official_input.get("schools_path", "data/raw/gias_establishments.csv"))
+        ofsted_dest = PROJECT_ROOT / str(official_input.get("ofsted_path", "data/raw/ofsted_state_funded_schools.csv"))
+        try:
+            fetch_result = _fetch_sources(pipeline_config, schools_dest, ofsted_dest)
+            fetch_provenances = fetch_result.provenances
+        except Exception as exc:  # never let provenance failure abort a run
+            LOGGER.warning("Could not build source provenance: %s", exc)
+
         all_records, sources, base_notes = load_official_records(pipeline_config)
         LOGGER.info("Loaded %d total records from official sources", len(all_records))
     else:
@@ -303,6 +349,7 @@ def run_london(
         pipeline_config,
         all_records=all_records if input_mode_effective == "official" else None,
         threshold_config=threshold_config,
+        provenances=fetch_provenances if fetch_provenances else None,
     )
 
     LOGGER.info(
