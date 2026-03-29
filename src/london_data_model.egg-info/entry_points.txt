@@ -1,0 +1,3 @@
+[console_scripts]
+ldm = london_data_model.cli:main
+

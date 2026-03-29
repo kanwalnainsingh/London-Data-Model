@@ -81,13 +81,16 @@ def _normalize_float_field(value: Any) -> Optional[float]:
 
 
 def _normalize_sixth_form(value: Any) -> Optional[bool]:
-    """Normalise GIAS OfficialSixthForm field to bool."""
+    """Normalise GIAS OfficialSixthForm field to bool.
+
+    GIAS uses: "Has a sixth form" / "Does not have a sixth form" / "Not applicable"
+    """
     if value is None:
         return None
     text = str(value).strip().lower()
-    if text == "has sixth form":
+    if "has a sixth form" in text or text == "has sixth form":
         return True
-    if text == "does not have sixth form":
+    if "does not have" in text:
         return False
     if text in ("", "not applicable"):
         return None
