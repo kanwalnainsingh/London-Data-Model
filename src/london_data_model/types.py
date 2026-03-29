@@ -62,6 +62,46 @@ class SourceDescriptor:
 
 
 @dataclass
+class SourceProvenance:
+    """Lineage record for one raw data source used by the pipeline.
+
+    Written to docs/data/sources.json so the dashboard can show users exactly
+    which data was used, where it came from, when it was fetched, and how fresh
+    the underlying source was at fetch time.
+    """
+    # --- Identity ---
+    source_name: str                    # machine key, e.g. "gias_establishments"
+    label: str                          # human label, e.g. "Get Information About Schools (GIAS)"
+    source_type: str                    # same as source_name (kept for symmetry with SourceDescriptor)
+    source_category: str                # "administrative_register" | "inspection_data" | "performance_statistics"
+
+    # --- Publisher / licence ---
+    publisher: str                      # e.g. "Department for Education (DfE)"
+    licence: str                        # e.g. "Open Government Licence v3.0"
+    home_url: str                       # canonical landing page
+    update_frequency: str               # e.g. "Daily", "Monthly", "Annual"
+    coverage: str                       # e.g. "All state-funded schools in England"
+    description: str                    # one-sentence description for the UI
+    fields_used: List[str] = field(default_factory=list)  # column names pulled from the source
+
+    # --- Fetch provenance (populated at pipeline run time) ---
+    url: Optional[str] = None           # URL the file was downloaded from
+    fetched_at: Optional[str] = None    # ISO-8601 timestamp: when was this file last written to disk?
+    file_path: Optional[str] = None     # relative path under project root
+    file_size_bytes: Optional[int] = None
+    file_size_mb: Optional[float] = None
+
+    # --- Source-side freshness ---
+    source_date: Optional[str] = None   # ISO date embedded in the source filename / URL
+    academic_year: Optional[str] = None # e.g. "2022-23" for performance tables
+    status: str = "not_configured"      # "loaded" | "skipped" | "missing" | "not_configured"
+    notes: List[str] = field(default_factory=list)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
 class SchoolRecord:
     school_name: str = ""
     school_urn: str = ""

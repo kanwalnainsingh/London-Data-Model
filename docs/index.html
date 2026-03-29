@@ -502,10 +502,87 @@
       .result-stat.p8-positive strong { color: #065f46; }
       .result-stat.p8-negative strong { color: #7f1d1d; }
 
+      /* ── Data sources table ───────────────────────────── */
+      .sources-tbl {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      .sources-tbl th {
+        text-align: left;
+        padding: 6px 10px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        border-bottom: 2px solid var(--line);
+      }
+
+      .sources-tbl td {
+        padding: 10px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+        line-height: 1.4;
+      }
+
+      .sources-tbl td a { color: var(--accent); text-decoration: none; }
+      .sources-tbl td a:hover { text-decoration: underline; }
+
+      .sources-tbl tr:last-child td { border-bottom: none; }
+
+      .src-badge {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+
+      .badge-register   { background: #dbeafe; color: #1e40af; }
+      .badge-inspection { background: #ede9fe; color: #5b21b6; }
+      .badge-performance { background: #d1fae5; color: #065f46; }
+
+      .freshness-row {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+      }
+
+      .freshness-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .freshness-item strong {
+        font-size: 13px;
+        color: var(--ink);
+      }
+
+      .freshness-item span {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .src-status-loaded   { color: #065f46; font-weight: 700; }
+      .src-status-skipped  { color: var(--muted); }
+      .src-status-missing  { color: #7f1d1d; font-weight: 700; }
+      .src-status-not_configured { color: var(--muted); font-style: italic; }
+
       @media (max-width: 640px) {
         .two-col { grid-template-columns: 1fr; }
         .borough-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
         .school-grid { grid-template-columns: 1fr; }
+        .sources-tbl th:nth-child(3),
+        .sources-tbl td:nth-child(3),
+        .sources-tbl th:nth-child(4),
+        .sources-tbl td:nth-child(4) { display: none; }
       }
     </style>
   </head>
@@ -633,22 +710,54 @@
         </div>
       </div>
 
-      <!-- ── Data sources ────────────────────────────────── -->
-      <div class="card" style="margin-top: 4px;">
-        <h2>Data Sources</h2>
-        <p class="small">Official data is downloaded automatically when you run in official mode — no manual file placement needed.</p>
-        <div class="two-col" style="margin-top:0;">
-          <div>
-            <div class="tiny-label">GIAS — Get Information About Schools</div>
-            <p class="small" style="margin:4px 0;">Department for Education establishment register. Downloaded fresh each run from the DfE open-data endpoint.</p>
-          </div>
-          <div>
-            <div class="tiny-label">Ofsted — Five-year inspection data</div>
-            <p class="small" style="margin:4px 0;">Latest Ofsted state-funded school inspection results. Auto-resolved from the GOV.UK publications page each run.</p>
-          </div>
+      <!-- ── Data sources & lineage ──────────────────────── -->
+      <div class="card" style="margin-top: 4px;" id="sources-section">
+        <h2>Data Sources &amp; Freshness</h2>
+        <p class="small" style="margin-bottom:16px;">
+          Every school record is assembled from four official open-data sources.
+          The table below shows what each source provides, when it was last pulled,
+          how large the file was, and when the underlying data was published.
+        </p>
+        <div id="sources-table">
+          <!-- Populated dynamically from sources.json; static fallback shown if unavailable -->
+          <table class="sources-tbl">
+            <thead><tr>
+              <th>Source</th><th>Category</th><th>Publisher</th>
+              <th>Update frequency</th><th>Fields used</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><a href="https://get-information-schools.service.gov.uk/" target="_blank" rel="noopener">GIAS — Get Information About Schools</a></td>
+                <td><span class="src-badge badge-register">Administrative register</span></td>
+                <td>Department for Education</td><td>Daily</td>
+                <td>Name, address, phase, type, coordinates, postcode, LA code</td>
+              </tr>
+              <tr>
+                <td><a href="https://www.gov.uk/government/publications/five-year-ofsted-inspection-data" target="_blank" rel="noopener">Ofsted — State-funded inspection outcomes</a></td>
+                <td><span class="src-badge badge-inspection">Inspection data</span></td>
+                <td>Ofsted</td><td>Monthly</td>
+                <td>Overall effectiveness grade, inspection date</td>
+              </tr>
+              <tr>
+                <td><a href="https://www.find-school-performance-data.service.gov.uk/" target="_blank" rel="noopener">DfE KS4 — GCSE performance tables</a></td>
+                <td><span class="src-badge badge-performance">Performance statistics</span></td>
+                <td>Department for Education</td><td>Annual (January)</td>
+                <td>Progress 8, Attainment 8, % grade 4+/5+ English &amp; Maths</td>
+              </tr>
+              <tr>
+                <td><a href="https://www.find-school-performance-data.service.gov.uk/" target="_blank" rel="noopener">DfE KS5 — A-level performance tables</a></td>
+                <td><span class="src-badge badge-performance">Performance statistics</span></td>
+                <td>Department for Education</td><td>Annual (October/November)</td>
+                <td>Avg point score, % A*/A, pass rate, number of students</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="small" style="margin-top:10px;color:var(--muted);" id="sources-freshness-msg">
+            Run the pipeline in official mode to populate live fetch timestamps and file sizes.
+          </p>
         </div>
         <div class="status-good" id="blocker-box" style="margin-top:14px;">
-          Pipeline auto-downloads GIAS and Ofsted data. Run <code>ldm schools run --area KT19 --input-mode official</code> to generate fresh data.
+          Pipeline auto-downloads GIAS and Ofsted data. Run <code>ldm schools run --area london --input-mode official</code> to generate fresh data.
         </div>
       </div>
     </main>
@@ -1013,6 +1122,108 @@
       });
 
       // Load London index; fall back to KT19
+      // ── Sources / data lineage card ──────────────────────────────────────
+      const _CATEGORY_LABELS = {
+        administrative_register: "Administrative register",
+        inspection_data: "Inspection data",
+        performance_statistics: "Performance statistics",
+      };
+      const _CATEGORY_BADGE = {
+        administrative_register: "badge-register",
+        inspection_data: "badge-inspection",
+        performance_statistics: "badge-performance",
+      };
+
+      function fmtBytes(b) {
+        if (!b) return "—";
+        if (b >= 1_048_576) return (b / 1_048_576).toFixed(0) + " MB";
+        return (b / 1024).toFixed(0) + " KB";
+      }
+
+      function fmtFetchDate(iso) {
+        if (!iso) return "—";
+        // "2026-03-29T10:00:00+00:00" → "29 Mar 2026, 10:00 UTC"
+        const d = new Date(iso);
+        if (isNaN(d)) return iso;
+        return d.toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"})
+          + ", " + d.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit", timeZone:"UTC"}) + " UTC";
+      }
+
+      function statusClass(s) {
+        return "src-status-" + (s || "not_configured");
+      }
+
+      function statusLabel(s) {
+        const map = {loaded:"Loaded", skipped:"Skipped (cached)", missing:"File missing", not_configured:"Not configured"};
+        return map[s] || s || "Unknown";
+      }
+
+      function renderSourcesFromJson(data) {
+        const sources = data.sources || [];
+        if (!sources.length) return;
+
+        // Build an enriched table replacing the static one
+        const rows = sources.map(s => {
+          const catLabel = _CATEGORY_LABELS[s.source_category] || s.source_category || "—";
+          const catBadge = _CATEGORY_BADGE[s.source_category] || "badge-register";
+          const homeLink = s.home_url
+            ? `<a href="${s.home_url}" target="_blank" rel="noopener">${s.label}</a>`
+            : s.label;
+          const fetchedTd = s.fetched_at
+            ? `<span title="${s.url || ''}">${fmtFetchDate(s.fetched_at)}</span>`
+            : `<span class="${statusClass(s.status)}">${statusLabel(s.status)}</span>`;
+          const sizeTd = fmtBytes(s.file_size_bytes);
+          const sourceDateTd = s.source_date || s.academic_year || "—";
+          const fieldsCount = (s.fields_used || []).length;
+          const fieldsTitle = (s.fields_used || []).join(", ");
+          return `<tr>
+            <td>${homeLink}</td>
+            <td><span class="src-badge ${catBadge}">${catLabel}</span></td>
+            <td>${s.publisher || "—"}</td>
+            <td>${s.update_frequency || "—"}</td>
+            <td title="${fieldsTitle}">${fieldsCount} field${fieldsCount !== 1 ? "s" : ""}</td>
+            <td>${fetchedTd}</td>
+            <td>${sizeTd}</td>
+            <td>${sourceDateTd}</td>
+          </tr>`;
+        }).join("");
+
+        // Work out overall freshness message
+        const loadedSources = sources.filter(s => s.status === "loaded" || s.status === "skipped");
+        const latestFetch = loadedSources
+          .map(s => s.fetched_at)
+          .filter(Boolean)
+          .sort()
+          .pop();
+
+        document.getElementById("sources-table").innerHTML = `
+          <table class="sources-tbl">
+            <thead><tr>
+              <th>Source</th>
+              <th>Category</th>
+              <th>Publisher</th>
+              <th>Update freq.</th>
+              <th>Fields</th>
+              <th>Last fetched</th>
+              <th>File size</th>
+              <th>Source date</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+          <p class="small" style="margin-top:10px;color:var(--muted);">
+            All sources are released under the
+            <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" target="_blank" rel="noopener">Open Government Licence v3.0</a>.
+            ${latestFetch ? "Data last fetched: <strong>" + fmtFetchDate(latestFetch) + "</strong>." : ""}
+          </p>`;
+      }
+
+      // Load sources.json in background — gracefully does nothing if absent
+      fetch("./data/sources.json")
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d) renderSourcesFromJson(d); })
+        .catch(() => {});
+
+      // ── London index / KT19 fallback ─────────────────────────────────────
       fetch("./data/london-index.json")
         .then(r => r.ok ? r.json() : Promise.reject(new Error("No London index")))
         .then(renderLondonDashboard)
