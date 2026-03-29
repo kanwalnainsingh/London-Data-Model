@@ -1153,22 +1153,6 @@
         return compact.slice(0, -3) + " " + compact.slice(-3);
       }
 
-      function qualityFlagLabel(flag) {
-        const labels = {
-          missing_ofsted_rating: "Ofsted overall rating is missing",
-          missing_inspection_date: "Latest inspection date is missing",
-          missing_coordinates: "Map coordinates are missing",
-          missing_website: "School website is missing",
-          missing_telephone: "Telephone number is missing",
-          missing_capacity: "School capacity is missing",
-          missing_pupil_count: "Pupil count is missing",
-        };
-        if (labels[flag]) return labels[flag];
-        return String(flag || "")
-          .replace(/_/g, " ")
-          .replace(/\b\w/g, c => c.toUpperCase());
-      }
-
       function renderSearchSummary(meta, filteredCount, postcode, sourceLabel) {
         const suffix = filteredCount !== 1 ? "s" : "";
         let note = `Showing <strong>${filteredCount}</strong> school${suffix} near <strong>${postcode}</strong>, sorted by distance <span style="color:var(--muted);">(${sourceLabel})</span>.`;
@@ -1197,6 +1181,13 @@
           "ks5_pass_rate_pct",
           "ks5_entries",
         ]));
+      }
+
+      function missingDataMessages(s) {
+        if (Array.isArray(s.missing_data_messages) && s.missing_data_messages.length) {
+          return s.missing_data_messages;
+        }
+        return Array.isArray(s.data_quality_flags) ? s.data_quality_flags.filter(Boolean) : [];
       }
 
       function renderResultsStat(value, label, extraClass) {
@@ -1239,19 +1230,27 @@
 
       function renderSchoolCard(s) {
         const dist = typeof s._dist_km === "number" ? s._dist_km.toFixed(1) + " km" : "";
-        const ofstedLabel = s.ofsted_rating_latest || "No rating";
+        const ofstedLabel = s.ofsted_rating_label || s.ofsted_rating_latest || "No rating";
         const inspDate = s.ofsted_inspection_date_latest
           ? "Inspected " + s.ofsted_inspection_date_latest : "";
-        const qualBadge = s.data_quality_status === "complete"
-          ? `<span class="badge badge-good">Complete</span>`
-          : s.data_quality_status === "partial"
-          ? `<span class="badge badge-warn">Partial data</span>`
-          : `<span class="badge badge-poor">Poor data</span>`;
-        const qualityFlags = Array.isArray(s.data_quality_flags) ? s.data_quality_flags.filter(Boolean) : [];
+        const qualityBadgeClass = s.quality_badge_class
+          || (s.data_quality_status === "complete"
+            ? "badge-good"
+            : s.data_quality_status === "partial"
+            ? "badge-warn"
+            : "badge-poor");
+        const qualityBadgeLabel = s.quality_badge_label
+          || (s.data_quality_status === "complete"
+            ? "Complete"
+            : s.data_quality_status === "partial"
+            ? "Partial data"
+            : "Poor data");
+        const qualBadge = `<span class="badge ${qualityBadgeClass}">${qualityBadgeLabel}</span>`;
+        const qualityFlags = missingDataMessages(s);
         const qualityFlagsHtml = qualityFlags.length
           ? `<div class="quality-flags">
                <strong>Missing or incomplete data</strong>
-               <ul>${qualityFlags.map(flag => `<li>${qualityFlagLabel(flag)}</li>`).join("")}</ul>
+               <ul>${qualityFlags.map(flag => `<li>${flag}</li>`).join("")}</ul>
              </div>`
           : "";
 
@@ -1303,7 +1302,7 @@
           infoRow("Admissions",        s.admissions_policy),
           infoRow("Religious character", s.religious_character),
           infoRow("Sixth form",        sixthFormVal),
-          infoRow("Status",            s.is_open === true ? "Open" : s.is_open === false ? "Closed" : null),
+          infoRow("Status",            s.status_label || (s.is_open === true ? "Open" : s.is_open === false ? "Closed" : null)),
           infoRow("Free school meals", fsmVal),
           infoRow("Deprivation band",  s.ofsted_deprivation_band),
           infoRow("Telephone",         telVal),
@@ -1346,12 +1345,15 @@
           renderResultsStat(fmtPct(s.ks4_strong_pass_pct),     "Grade 5+ Eng & Maths",  ""),
           renderResultsStat(fmtPct(s.ks4_standard_pass_pct),   "Grade 4+ Eng & Maths",  ""),
         ].join("");
+        const hasKs4Data = s.has_ks4_data != null
+          ? s.has_ks4_data
+          : hasAnyMetric(s, ["ks4_progress8", "ks4_attainment8", "ks4_strong_pass_pct", "ks4_standard_pass_pct"]);
         const ks4Html = ks4Stats.trim()
           ? `<div class="results-section">
                <div class="results-label">GCSE Results</div>
                <div class="results-grid">${ks4Stats}</div>
              </div>`
-          : isSecondary && _performanceAvailability.ks4
+          : isSecondary && _performanceAvailability.ks4 && !hasKs4Data
           ? `<div class="results-section">
                <div class="results-label">GCSE Results</div>
                <p style="font-size:12px;color:var(--muted);margin:0;">No GCSE metrics are published for this school in the current dataset.</p>
@@ -1366,12 +1368,15 @@
           renderResultsStat(fmtPct(s.ks5_pass_rate_pct),      "A*–E pass rate",            ""),
           renderResultsStat(s.ks5_entries != null ? String(s.ks5_entries) : null, "A-level students", ""),
         ].join("");
+        const hasKs5Data = s.has_ks5_data != null
+          ? s.has_ks5_data
+          : hasAnyMetric(s, ["ks5_avg_point_score", "ks5_a_star_a_pct", "ks5_pass_rate_pct", "ks5_entries"]);
         const ks5Html = ks5Stats.trim()
           ? `<div class="results-section">
                <div class="results-label">A-Level Results</div>
                <div class="results-grid">${ks5Stats}</div>
              </div>`
-          : hasSixthForm && _performanceAvailability.ks5
+          : hasSixthForm && _performanceAvailability.ks5 && !hasKs5Data
           ? `<div class="results-section">
                <div class="results-label">A-Level Results</div>
                <p style="font-size:12px;color:var(--muted);margin:0;">No A-level metrics are published for this school in the current dataset.</p>
@@ -1385,8 +1390,8 @@
             ${dist ? `<div class="dist-badge">${dist}</div>` : ""}
           </div>
           <div class="school-meta">
-            <span class="phase-tag ${phaseClass(s.phase)}">${s.phase ? s.phase.replace(/_/g," ") : "unknown"}</span>
-            <span class="ofsted-tag ${ofstedClass(s.ofsted_rating_latest)}">${ofstedLabel}</span>
+            <span class="phase-tag ${s.phase_badge_class || phaseClass(s.phase)}">${s.phase_label || (s.phase ? s.phase.replace(/_/g," ") : "unknown")}</span>
+            <span class="ofsted-tag ${s.ofsted_rating_class || ofstedClass(s.ofsted_rating_latest)}">${ofstedLabel}</span>
             ${qualBadge}
           </div>
           <div class="school-address">${s.address || ""}${s.postcode ? ", " + s.postcode : ""}</div>

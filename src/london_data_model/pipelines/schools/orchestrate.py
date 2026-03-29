@@ -11,7 +11,7 @@ from london_data_model.pipelines.schools.extract import (
     filter_by_la_codes,
     load_official_records,
 )
-from london_data_model.pipelines.schools.publish import publish
+from london_data_model.pipelines.schools.publish import build_public_school_payload, publish
 from london_data_model.pipelines.schools.transform import (
     OFSTED_REPORT_BASE_URL,
     _OFSTED_RATING_MAP,
@@ -44,6 +44,7 @@ from london_data_model.types import (
     PipelineContext,
     PipelineResult,
     PublishResult,
+    SchoolRecord,
     SourceProvenance,
     ValidateResult,
 )
@@ -123,74 +124,65 @@ def _add_fringe_schools(
         if not ofsted_date:
             flags.append("missing_inspection_date")
 
-        schools_by_urn[urn] = {
-            "school_name": str(raw.get("school_name", "")),
-            "school_urn": urn,
-            "address": str(raw.get("address", "")),
-            "postcode": raw.get("postcode"),
-            "latitude": lat_f,
-            "longitude": lon_f,
-            "phase": phase,
-            "establishment_type": str(raw.get("establishment_type", "")),
-            "is_open": True,
-            "distance_km": dist,
-            "accessibility_band": assign_accessibility_band(phase, dist, threshold_config),
-            "proximity_score": calculate_proximity_score(phase, dist, threshold_config),
-            "ofsted_rating_latest": ofsted_rating,
-            "ofsted_inspection_date_latest": ofsted_date,
-            "ofsted_report_url": (
+        fringe_record = SchoolRecord(
+            school_name=str(raw.get("school_name", "")),
+            school_urn=urn,
+            address=str(raw.get("address", "")),
+            postcode=raw.get("postcode"),
+            latitude=lat_f,
+            longitude=lon_f,
+            phase=phase,
+            establishment_type=str(raw.get("establishment_type", "")),
+            is_open=True,
+            distance_km=dist,
+            accessibility_band=assign_accessibility_band(phase, dist, threshold_config),
+            proximity_score=calculate_proximity_score(phase, dist, threshold_config),
+            ofsted_rating_latest=ofsted_rating,
+            ofsted_inspection_date_latest=ofsted_date,
+            ofsted_report_url=(
                 raw.get("ofsted_report_url")
                 or (OFSTED_REPORT_BASE_URL + urn if urn else None)
             ),
-            "ofsted_quality_of_education": _normalize_ofsted_subrating(raw.get("ofsted_quality_of_education")),
-            "ofsted_leadership_management": _normalize_ofsted_subrating(raw.get("ofsted_leadership_management")),
-            "ofsted_personal_development": _normalize_ofsted_subrating(raw.get("ofsted_personal_development")),
-            "ofsted_behaviour_attitudes": _normalize_ofsted_subrating(raw.get("ofsted_behaviour_attitudes")),
-            "ofsted_sixth_form": _normalize_ofsted_subrating(raw.get("ofsted_sixth_form")),
-            "ofsted_safeguarding": _normalize_ofsted_safeguarding(raw.get("ofsted_safeguarding")),
-            # Additional Ofsted fields
-            "ofsted_early_years": _normalize_ofsted_subrating(raw.get("ofsted_early_years")),
-            "ofsted_category_of_concern": (
+            ofsted_quality_of_education=_normalize_ofsted_subrating(raw.get("ofsted_quality_of_education")),
+            ofsted_leadership_management=_normalize_ofsted_subrating(raw.get("ofsted_leadership_management")),
+            ofsted_personal_development=_normalize_ofsted_subrating(raw.get("ofsted_personal_development")),
+            ofsted_behaviour_attitudes=_normalize_ofsted_subrating(raw.get("ofsted_behaviour_attitudes")),
+            ofsted_sixth_form=_normalize_ofsted_subrating(raw.get("ofsted_sixth_form")),
+            ofsted_safeguarding=_normalize_ofsted_safeguarding(raw.get("ofsted_safeguarding")),
+            ofsted_early_years=_normalize_ofsted_subrating(raw.get("ofsted_early_years")),
+            ofsted_category_of_concern=(
                 str(raw["ofsted_category_of_concern"]).strip()
                 if raw.get("ofsted_category_of_concern") not in (None, "")
                 else None
             ),
-            "ofsted_deprivation_band": (
+            ofsted_deprivation_band=(
                 str(raw["ofsted_deprivation_band"]).strip()
                 if raw.get("ofsted_deprivation_band") not in (None, "")
                 else None
             ),
-            # GIAS — additional school characteristics
-            "school_website": (
+            school_website=(
                 str(raw["school_website"]).strip()
                 if raw.get("school_website") not in (None, "")
                 else None
             ),
-            "telephone": (
+            telephone=(
                 str(raw["telephone"]).strip()
                 if raw.get("telephone") not in (None, "")
                 else None
             ),
-            "number_of_pupils": _normalize_int(raw.get("number_of_pupils")),
-            "school_capacity": _normalize_int(raw.get("school_capacity")),
-            "gender": _normalize_gender(raw.get("gender")),
-            "religious_character": _normalize_religious_character(raw.get("religious_character")),
-            "admissions_policy": _normalize_admissions_policy(raw.get("admissions_policy")),
-            "has_sixth_form": _normalize_sixth_form(raw.get("has_sixth_form")),
-            "statutory_low_age": _normalize_int(raw.get("statutory_low_age")),
-            "statutory_high_age": _normalize_int(raw.get("statutory_high_age")),
-            "pct_free_school_meals": _normalize_float_field(raw.get("pct_free_school_meals")),
-            "ks4_progress8": None,
-            "ks4_attainment8": None,
-            "ks4_strong_pass_pct": None,
-            "ks4_standard_pass_pct": None,
-            "ks5_avg_point_score": None,
-            "ks5_a_star_a_pct": None,
-            "ks5_pass_rate_pct": None,
-            "ks5_entries": None,
-            "data_quality_status": "complete" if not flags else "partial",
-            "data_quality_flags": flags,
-        }
+            number_of_pupils=_normalize_int(raw.get("number_of_pupils")),
+            school_capacity=_normalize_int(raw.get("school_capacity")),
+            gender=_normalize_gender(raw.get("gender")),
+            religious_character=_normalize_religious_character(raw.get("religious_character")),
+            admissions_policy=_normalize_admissions_policy(raw.get("admissions_policy")),
+            has_sixth_form=_normalize_sixth_form(raw.get("has_sixth_form")),
+            statutory_low_age=_normalize_int(raw.get("statutory_low_age")),
+            statutory_high_age=_normalize_int(raw.get("statutory_high_age")),
+            pct_free_school_meals=_normalize_float_field(raw.get("pct_free_school_meals")),
+            data_quality_status="complete" if not flags else "partial",
+            data_quality_flags=flags,
+        )
+        schools_by_urn[urn] = build_public_school_payload(fringe_record)
         added += 1
 
     return added
@@ -291,7 +283,7 @@ def _publish_london_index(
             total_quality[key] += validated.quality_summary.get(key, 0)
 
         for record in validated.records:
-            d = record.to_dict()
+            d = build_public_school_payload(record)
             urn = d.get("school_urn", "")
             existing = schools_by_urn.get(urn)
             if existing is None:

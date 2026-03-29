@@ -121,6 +121,9 @@ class PublishSummaryTestCase(unittest.TestCase):
             status_payload = json.loads(
                 Path(result.output_files["public_status_json"]).read_text(encoding="utf-8")
             )
+            schools_payload = json.loads(
+                Path(result.output_files["public_schools_json"]).read_text(encoding="utf-8")
+            )
 
         self.assertEqual(summary_payload["school_count_total"], 3)
         self.assertEqual(
@@ -141,6 +144,17 @@ class PublishSummaryTestCase(unittest.TestCase):
             {"very_close": 1, "close": 1, "moderate": 1},
         )
         self.assertEqual(status_payload["missing_ofsted_count"], 1)
+        self.assertEqual(schools_payload[0]["phase_label"], "Primary")
+        self.assertEqual(schools_payload[0]["phase_badge_class"], "phase-primary")
+        self.assertEqual(schools_payload[0]["ofsted_rating_label"], "Good")
+        self.assertEqual(schools_payload[0]["ofsted_rating_class"], "ofsted-good")
+        self.assertEqual(schools_payload[0]["quality_badge_label"], "Complete")
+        self.assertEqual(schools_payload[0]["quality_badge_class"], "badge-good")
+        self.assertEqual(schools_payload[0]["status_label"], "Open")
+        self.assertEqual(schools_payload[0]["missing_data_messages"], [])
+        self.assertFalse(schools_payload[0]["has_ks4_data"])
+        self.assertFalse(schools_payload[0]["has_ks5_data"])
+        self.assertEqual(schools_payload[1]["ofsted_rating_label"], "No rating")
 
     def test_publish_includes_exclusion_reasons_in_internal_manifest(self) -> None:
         context = PipelineContext(

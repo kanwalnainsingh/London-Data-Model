@@ -6,6 +6,7 @@ import logging
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional, Tuple
 
 from london_data_model.settings import DOCS_DATA_DIR, MANIFESTS_DATA_DIR, MARTS_DATA_DIR, PROJECT_ROOT
 from london_data_model.types import (
@@ -22,6 +23,42 @@ LOGGER = logging.getLogger(__name__)
 
 _PHASE_ORDER = ("primary", "secondary", "all_through")
 _ACCESSIBILITY_BAND_ORDER = ("very_close", "close", "moderate", "far")
+_PHASE_LABELS = {
+    "primary": "Primary",
+    "secondary": "Secondary",
+    "all_through": "All Through",
+}
+_PHASE_BADGE_CLASSES = {
+    "primary": "phase-primary",
+    "secondary": "phase-secondary",
+    "all_through": "phase-all-through",
+}
+_QUALITY_BADGES = {
+    "complete": {"label": "Complete", "class_name": "badge-good"},
+    "partial": {"label": "Partial data", "class_name": "badge-warn"},
+    "poor": {"label": "Poor data", "class_name": "badge-poor"},
+}
+_QUALITY_FLAG_MESSAGES = {
+    "missing_ofsted_rating": "Ofsted overall rating is missing",
+    "missing_inspection_date": "Latest inspection date is missing",
+    "missing_coordinates": "Map coordinates are missing",
+    "missing_website": "School website is missing",
+    "missing_telephone": "Telephone number is missing",
+    "missing_capacity": "School capacity is missing",
+    "missing_pupil_count": "Pupil count is missing",
+}
+_KS4_FIELDS = (
+    "ks4_progress8",
+    "ks4_attainment8",
+    "ks4_strong_pass_pct",
+    "ks4_standard_pass_pct",
+)
+_KS5_FIELDS = (
+    "ks5_avg_point_score",
+    "ks5_a_star_a_pct",
+    "ks5_pass_rate_pct",
+    "ks5_entries",
+)
 
 
 def _write_csv(path: Path, validated: ValidateResult) -> None:
@@ -45,6 +82,69 @@ def _write_json_minified(path: Path, payload: object) -> None:
 def _ordered_counts(values: list, order: tuple) -> dict:
     counts = Counter(value for value in values if value)
     return {key: counts[key] for key in order if counts.get(key)}
+
+
+def _phase_label(phase: Optional[str]) -> str:
+    if not phase:
+        return "Unknown"
+    return _PHASE_LABELS.get(phase, phase.replace("_", " ").title())
+
+
+def _phase_badge_class(phase: Optional[str]) -> str:
+    if not phase:
+        return ""
+    return _PHASE_BADGE_CLASSES.get(phase, "phase-all-through")
+
+
+def _ofsted_rating_class(rating: Optional[str]) -> str:
+    if not rating:
+        return "ofsted-unknown"
+    lowered = rating.lower()
+    if "outstanding" in lowered:
+        return "ofsted-outstanding"
+    if "good" in lowered:
+        return "ofsted-good"
+    if "requires" in lowered:
+        return "ofsted-requires"
+    if "inadequate" in lowered:
+        return "ofsted-inadequate"
+    return "ofsted-unknown"
+
+
+def _quality_badge(status: str) -> dict:
+    return _QUALITY_BADGES.get(status, _QUALITY_BADGES["partial"])
+
+
+def _quality_flag_message(flag: str) -> str:
+    if flag in _QUALITY_FLAG_MESSAGES:
+        return _QUALITY_FLAG_MESSAGES[flag]
+    return flag.replace("_", " ").title()
+
+
+def _has_any_metrics(record, field_names: Tuple[str, ...]) -> bool:
+    return any(getattr(record, field_name) is not None for field_name in field_names)
+
+
+def build_public_school_payload(record) -> dict:
+    payload = record.to_dict()
+    quality_badge = _quality_badge(record.data_quality_status)
+    payload.update(
+        {
+            "phase_label": _phase_label(record.phase),
+            "phase_badge_class": _phase_badge_class(record.phase),
+            "ofsted_rating_label": record.ofsted_rating_latest or "No rating",
+            "ofsted_rating_class": _ofsted_rating_class(record.ofsted_rating_latest),
+            "quality_badge_label": quality_badge["label"],
+            "quality_badge_class": quality_badge["class_name"],
+            "status_label": "Open" if record.is_open else "Closed",
+            "missing_data_messages": [
+                _quality_flag_message(flag) for flag in record.data_quality_flags
+            ],
+            "has_ks4_data": _has_any_metrics(record, _KS4_FIELDS),
+            "has_ks5_data": _has_any_metrics(record, _KS5_FIELDS),
+        }
+    )
+    return payload
 
 
 def _build_summary_payload(validated: ValidateResult, context: PipelineContext) -> dict:
@@ -240,7 +340,7 @@ def publish(
     )
     _write_json_minified(
         public_schools_path,
-        [record.to_dict() for record in validated.records],
+        [build_public_school_payload(record) for record in validated.records],
     )
 
     output_files = {
