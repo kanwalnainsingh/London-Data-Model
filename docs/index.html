@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>London Data Model — School Discovery</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f766e'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-size='24' font-family='Georgia, serif' fill='white'%3ELDM%3C/text%3E%3C/svg%3E" />
     <style>
       :root {
         --bg: #f4f1e8;
@@ -955,6 +956,19 @@
         </a>`;
       }
 
+      function renderPilotAreaSummary(options) {
+        const label = options.kingstonLabel || "Royal Borough of Kingston upon Thames";
+        const statusUrl = options.kingstonStatusUrl || "./data/kingston-upon-thames-status.json";
+        if (options.kt19Area) {
+          const pct = qualityPct(options.kt19Area.quality_counts || {});
+          return `<strong>${options.kt19Area.school_count}</strong> schools &nbsp;·&nbsp; ${pct}% complete`;
+        }
+        if (options.kt19Status && (options.kt19Status.school_count_total || 0) > 0) {
+          return `<strong>${options.kt19Status.school_count_total}</strong> schools &nbsp;·&nbsp; historic pilot run: ${options.kt19Status.input_mode || "sample"}`;
+        }
+        return `Historic sample artifact only &nbsp;·&nbsp; current live coverage is provided by the <a href="${statusUrl}" target="_blank" rel="noopener">${label}</a> borough dataset and the London-wide postcode search above.`;
+      }
+
       function renderLondonDashboard(data) {
         document.getElementById("loading-msg").style.display = "none";
 
@@ -971,6 +985,7 @@
 
         // Borough grid
         const areas = (data.areas || []).filter(a => a.area_type === "borough");
+        const kingstonArea = areas.find(a => (a.area_id || "").toLowerCase() === "kingston-upon-thames");
         if (areas.length > 0) {
           document.getElementById("borough-grid").innerHTML = areas.map(renderBoroughCard).join("");
           document.getElementById("borough-section").style.display = "";
@@ -979,9 +994,11 @@
         // Pilot area: look for KT19 or kt19 in areas or fetch separately
         const kt19Area = (data.areas || []).find(a => a.area_id && a.area_id.toLowerCase() === "kt19");
         if (kt19Area) {
-          const pct = qualityPct(kt19Area.quality_counts || {});
-          document.getElementById("kt19-stats").innerHTML =
-            `<strong>${kt19Area.school_count}</strong> schools &nbsp;·&nbsp; ${pct}% complete`;
+          document.getElementById("kt19-stats").innerHTML = renderPilotAreaSummary({
+            kt19Area,
+            kingstonLabel: kingstonArea && kingstonArea.label,
+            kingstonStatusUrl: kingstonArea && kingstonArea.status_url,
+          });
           document.getElementById("pilot-section").style.display = "";
         } else {
           // Try fetching kt19 status directly
@@ -989,8 +1006,11 @@
             .then(r => r.ok ? r.json() : null)
             .then(d => {
               if (!d) return;
-              document.getElementById("kt19-stats").innerHTML =
-                `<strong>${d.school_count_total || 0}</strong> schools &nbsp;·&nbsp; historic pilot run: ${d.input_mode || "sample"}`;
+              document.getElementById("kt19-stats").innerHTML = renderPilotAreaSummary({
+                kt19Status: d,
+                kingstonLabel: kingstonArea && kingstonArea.label,
+                kingstonStatusUrl: kingstonArea && kingstonArea.status_url,
+              });
               document.getElementById("pilot-section").style.display = "";
             })
             .catch(() => {});
