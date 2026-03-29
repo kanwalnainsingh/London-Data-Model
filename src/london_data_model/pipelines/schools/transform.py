@@ -19,6 +19,11 @@ _OFSTED_RATING_MAP = {
     "3": "Requires improvement",
     "4": "Inadequate",
 }
+
+# Value "9" means "Not applicable" in Ofsted sub-rating columns → treat as None
+_OFSTED_NOT_APPLICABLE = frozenset({"9", "n/a", "not applicable", ""})
+
+OFSTED_REPORT_BASE_URL = "https://reports.ofsted.gov.uk/provider/21/"
 EXCLUDED_ESTABLISHMENT_TERMS = (
     "independent",
     "private",
@@ -29,6 +34,30 @@ EXCLUDED_ESTABLISHMENT_TERMS = (
     "further education",
     "sixth form college",
 )
+
+
+def _normalize_ofsted_subrating(value: Any) -> Optional[str]:
+    """Return a human label for an Ofsted sub-rating value (1-4), or None if not applicable."""
+    if value is None:
+        return None
+    text = str(value).strip().lower()
+    if text in _OFSTED_NOT_APPLICABLE:
+        return None
+    return _OFSTED_RATING_MAP.get(str(value).strip(), None)
+
+
+def _normalize_ofsted_safeguarding(value: Any) -> Optional[str]:
+    """Return 'Yes' or 'No' for the safeguarding field, or None if not applicable."""
+    if value is None:
+        return None
+    text = str(value).strip().lower()
+    if text in _OFSTED_NOT_APPLICABLE:
+        return None
+    if text == "yes":
+        return "Yes"
+    if text == "no":
+        return "No"
+    return None
 
 
 def _normalize_dfe_number(value: Any) -> Optional[float]:
@@ -230,7 +259,19 @@ def build_school_record(raw_record: Dict[str, Any], context: PipelineContext) ->
             raw_record.get("ofsted_rating_latest"),
         ),
         ofsted_inspection_date_latest=raw_record.get("ofsted_inspection_date_latest"),
-        ofsted_report_url=raw_record.get("ofsted_report_url"),
+        # Generate the Ofsted report URL from the URN when not already supplied
+        ofsted_report_url=(
+            raw_record.get("ofsted_report_url")
+            or (OFSTED_REPORT_BASE_URL + str(raw_record.get("school_urn", "")).strip()
+                if raw_record.get("school_urn") else None)
+        ),
+        # Ofsted sub-ratings (numeric 1-4 from inspection data)
+        ofsted_quality_of_education=_normalize_ofsted_subrating(raw_record.get("ofsted_quality_of_education")),
+        ofsted_leadership_management=_normalize_ofsted_subrating(raw_record.get("ofsted_leadership_management")),
+        ofsted_personal_development=_normalize_ofsted_subrating(raw_record.get("ofsted_personal_development")),
+        ofsted_behaviour_attitudes=_normalize_ofsted_subrating(raw_record.get("ofsted_behaviour_attitudes")),
+        ofsted_sixth_form=_normalize_ofsted_subrating(raw_record.get("ofsted_sixth_form")),
+        ofsted_safeguarding=_normalize_ofsted_safeguarding(raw_record.get("ofsted_safeguarding")),
         # KS4 (GCSE) — present only when ks4_input is enabled and URN matched
         ks4_progress8=_normalize_dfe_number(raw_record.get("ks4_progress8")),
         ks4_attainment8=_normalize_dfe_number(raw_record.get("ks4_attainment8")),

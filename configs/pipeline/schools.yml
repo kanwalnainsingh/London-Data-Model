@@ -45,6 +45,12 @@ official_input:
     school_urn: URN
     ofsted_rating_latest: Overall effectiveness
     ofsted_inspection_date_latest: Published date
+    ofsted_quality_of_education: Quality of education
+    ofsted_leadership_management: Effectiveness of leadership and management
+    ofsted_personal_development: Personal development
+    ofsted_behaviour_attitudes: Behaviour and attitudes
+    ofsted_sixth_form: "Sixth form provision (where applicable)"
+    ofsted_safeguarding: "Safeguarding is effective?"
 # ── KS4 (GCSE) performance tables ─────────────────────────────────────────────
 # Source: DfE "Find school performance data" — Key Stage 4
 #   https://www.find-school-performance-data.service.gov.uk/download-data

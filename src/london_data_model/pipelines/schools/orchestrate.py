@@ -13,7 +13,10 @@ from london_data_model.pipelines.schools.extract import (
 )
 from london_data_model.pipelines.schools.publish import publish
 from london_data_model.pipelines.schools.transform import (
+    OFSTED_REPORT_BASE_URL,
     _OFSTED_RATING_MAP,
+    _normalize_ofsted_safeguarding,
+    _normalize_ofsted_subrating,
     assign_accessibility_band,
     calculate_distance_km,
     calculate_proximity_score,
@@ -129,7 +132,24 @@ def _add_fringe_schools(
             "proximity_score": calculate_proximity_score(phase, dist, threshold_config),
             "ofsted_rating_latest": ofsted_rating,
             "ofsted_inspection_date_latest": ofsted_date,
-            "ofsted_report_url": raw.get("ofsted_report_url"),
+            "ofsted_report_url": (
+                raw.get("ofsted_report_url")
+                or (OFSTED_REPORT_BASE_URL + urn if urn else None)
+            ),
+            "ofsted_quality_of_education": _normalize_ofsted_subrating(raw.get("ofsted_quality_of_education")),
+            "ofsted_leadership_management": _normalize_ofsted_subrating(raw.get("ofsted_leadership_management")),
+            "ofsted_personal_development": _normalize_ofsted_subrating(raw.get("ofsted_personal_development")),
+            "ofsted_behaviour_attitudes": _normalize_ofsted_subrating(raw.get("ofsted_behaviour_attitudes")),
+            "ofsted_sixth_form": _normalize_ofsted_subrating(raw.get("ofsted_sixth_form")),
+            "ofsted_safeguarding": _normalize_ofsted_safeguarding(raw.get("ofsted_safeguarding")),
+            "ks4_progress8": None,
+            "ks4_attainment8": None,
+            "ks4_strong_pass_pct": None,
+            "ks4_standard_pass_pct": None,
+            "ks5_avg_point_score": None,
+            "ks5_a_star_a_pct": None,
+            "ks5_pass_rate_pct": None,
+            "ks5_entries": None,
             "data_quality_status": "complete" if not flags else "partial",
             "data_quality_flags": flags,
         }
