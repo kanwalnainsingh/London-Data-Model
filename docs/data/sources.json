@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-29T14:18:11.447524+00:00",
+  "generated_at": "2026-03-29T17:03:58.013707+00:00",
   "input_mode": "official",
   "sources": [
     {
@@ -29,16 +29,16 @@
         "Town",
         "County (name)"
       ],
-      "url": "https://ea-edubase-api-prod.azurewebsites.net/edubase/downloads/public/edubasealldata20260329.csv",
-      "fetched_at": "2026-03-28T10:48:47.193228+00:00",
-      "file_path": "/Users/kanwalnainsingh/London-Data-Model/.claude/worktrees/optimistic-archimedes/data/raw/gias_establishments.csv",
+      "url": "https://ea-edubase-api-prod.azurewebsites.net/edubase/downloads/public/edubasealldata20260328.csv",
+      "fetched_at": "2026-03-29T16:58:05.925841+00:00",
+      "file_path": "/Users/kanwalnainsingh/London-Data-Model/data/raw/gias_establishments.csv",
       "file_size_bytes": 64323311,
       "file_size_mb": 61.34,
-      "source_date": "2026-03-29",
+      "source_date": "2026-03-28",
       "academic_year": null,
       "status": "loaded",
       "notes": [
-        "schools: skipped (file exists)"
+        "schools: downloaded from GIAS (yesterday export)"
       ]
     },
     {
@@ -57,16 +57,16 @@
         "Overall effectiveness",
         "Published date"
       ],
-      "url": "https://www.gov.uk/government/publications/five-year-ofsted-inspection-data",
-      "fetched_at": "2026-03-28T10:55:44.580299+00:00",
-      "file_path": "/Users/kanwalnainsingh/London-Data-Model/.claude/worktrees/optimistic-archimedes/data/raw/ofsted_state_funded_schools.csv",
+      "url": "https://assets.publishing.service.gov.uk/media/67ea6bdef0edd954a99fe925/five-year-ofsted-inspection-data_state-funded-schools.ods",
+      "fetched_at": "2026-03-29T17:03:43.234506+00:00",
+      "file_path": "/Users/kanwalnainsingh/London-Data-Model/data/raw/ofsted_state_funded_schools.csv",
       "file_size_bytes": 30401566,
       "file_size_mb": 28.99,
       "source_date": null,
       "academic_year": null,
       "status": "loaded",
       "notes": [
-        "ofsted: skipped (file exists)"
+        "ofsted: downloaded and converted from ODS (https://assets.publishing.service.gov.uk/media/67ea6bdef0edd954a99fe925/five-year-ofsted-inspection-data_state-funded-schools.ods)"
       ]
     },
     {
@@ -89,7 +89,7 @@
       ],
       "url": null,
       "fetched_at": null,
-      "file_path": "/Users/kanwalnainsingh/London-Data-Model/.claude/worktrees/optimistic-archimedes/data/raw/ks4_performance.csv",
+      "file_path": "/Users/kanwalnainsingh/London-Data-Model/data/raw/ks4_performance.csv",
       "file_size_bytes": null,
       "file_size_mb": null,
       "source_date": null,
@@ -119,7 +119,7 @@
       ],
       "url": null,
       "fetched_at": null,
-      "file_path": "/Users/kanwalnainsingh/London-Data-Model/.claude/worktrees/optimistic-archimedes/data/raw/ks5_performance.csv",
+      "file_path": "/Users/kanwalnainsingh/London-Data-Model/data/raw/ks5_performance.csv",
       "file_size_bytes": null,
       "file_size_mb": null,
       "source_date": null,
