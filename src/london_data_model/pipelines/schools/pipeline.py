@@ -44,7 +44,7 @@ def _is_official_mode(pipeline_config: Dict[str, object]) -> bool:
     return str(pipeline_config.get("input_mode", "sample")).lower() == "official"
 
 
-def _fetch_official_sources(pipeline_config: Dict[str, object]) -> None:
+def _fetch_official_sources(pipeline_config: Dict[str, object]):
     official_input = pipeline_config.get("official_input", {})
     schools_dest = _resolve_input_path(str(official_input.get("schools_path")))
     ofsted_dest = _resolve_input_path(str(official_input.get("ofsted_path")))
@@ -52,6 +52,7 @@ def _fetch_official_sources(pipeline_config: Dict[str, object]) -> None:
         result = fetch(pipeline_config, schools_dest, ofsted_dest)
         for note in result.notes:
             LOGGER.info("fetch: %s", note)
+        return result
     except FetchError as exc:
         raise OfficialSourceConfigError(str(exc)) from exc
 

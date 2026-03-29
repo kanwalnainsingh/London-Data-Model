@@ -1,13 +1,14 @@
 """Tests for LA code filtering and multi-borough orchestration."""
 
 import json
-import os
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from london_data_model.pipelines.schools.extract import OfficialSourceConfigError
 from london_data_model.pipelines.schools.extract import filter_by_la_codes
+from london_data_model.types import AreaConfig, SourceProvenance
 
 
 def _make_synthetic_records(la_codes_and_counts):
@@ -229,6 +230,109 @@ class TestLondonIndexPublishing(unittest.TestCase):
             area = data["areas"][0]
             self.assertIn("tower-hamlets", area["status_url"])
             self.assertNotIn("kt19", area["status_url"])
+
+
+class TestLondonOfficialMode(unittest.TestCase):
+    def test_run_london_fetches_before_preflight(self):
+        from london_data_model.pipelines.schools.fetch import FetchResult
+        from london_data_model.pipelines.schools.orchestrate import run_london
+        from london_data_model.types import PublishResult
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            schools_path = tmp_path / "gias.csv"
+            ofsted_path = tmp_path / "ofsted.csv"
+            pipeline_config = {
+                "input_mode": "official",
+                "official_input": {
+                    "schools_path": str(schools_path),
+                    "ofsted_path": str(ofsted_path),
+                },
+            }
+            borough_configs = [
+                AreaConfig(
+                    area_id="barnet",
+                    area_type="borough",
+                    label="London Borough of Barnet",
+                    search_point_method="borough_centroid",
+                    latitude=51.6252,
+                    longitude=-0.1517,
+                    la_code=302,
+                )
+            ]
+
+            def fake_fetch(_config):
+                schools_path.write_text("URN\n", encoding="utf-8")
+                ofsted_path.write_text("URN\n", encoding="utf-8")
+                return FetchResult(
+                    schools_path=schools_path,
+                    ofsted_path=ofsted_path,
+                    provenances=[
+                        SourceProvenance(
+                            source_name="gias_establishments",
+                            source_type="gias_establishments",
+                            label="GIAS",
+                            source_category="administrative_register",
+                            publisher="DfE",
+                            licence="OGL v3.0",
+                            home_url="https://example.com",
+                            update_frequency="Daily",
+                            coverage="England",
+                            description="Test provenance",
+                            status="loaded",
+                        )
+                    ],
+                )
+
+            with patch(
+                "london_data_model.pipelines.schools.orchestrate.load_pipeline_config",
+                return_value=pipeline_config,
+            ), patch(
+                "london_data_model.pipelines.schools.orchestrate.load_borough_configs",
+                return_value=borough_configs,
+            ), patch(
+                "london_data_model.pipelines.schools.orchestrate._fetch_official_sources",
+                side_effect=fake_fetch,
+            ) as fetch_mock, patch(
+                "london_data_model.pipelines.schools.orchestrate.load_official_records",
+                return_value=([], [], []),
+            ), patch(
+                "london_data_model.pipelines.schools.orchestrate.publish",
+                return_value=PublishResult(record_count=0),
+            ), patch(
+                "london_data_model.pipelines.schools.orchestrate._publish_london_index"
+            ) as publish_mock:
+                result = run_london(input_mode="official")
+
+        self.assertEqual(result.status, "success")
+        fetch_mock.assert_called_once_with(pipeline_config)
+        publish_mock.assert_called_once()
+
+    def test_run_london_propagates_fetch_failure(self):
+        from london_data_model.pipelines.schools.orchestrate import run_london
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            pipeline_config = {
+                "input_mode": "official",
+                "official_input": {
+                    "schools_path": str(tmp_path / "gias.csv"),
+                    "ofsted_path": str(tmp_path / "ofsted.csv"),
+                },
+            }
+
+            with patch(
+                "london_data_model.pipelines.schools.orchestrate.load_pipeline_config",
+                return_value=pipeline_config,
+            ), patch(
+                "london_data_model.pipelines.schools.orchestrate.load_borough_configs",
+                return_value=[],
+            ), patch(
+                "london_data_model.pipelines.schools.orchestrate._fetch_official_sources",
+                side_effect=OfficialSourceConfigError("fetch failed"),
+            ):
+                with self.assertRaises(OfficialSourceConfigError):
+                    run_london(input_mode="official")
 
 
 if __name__ == "__main__":

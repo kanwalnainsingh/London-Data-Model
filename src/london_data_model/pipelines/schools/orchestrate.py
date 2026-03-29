@@ -31,10 +31,10 @@ from london_data_model.pipelines.schools.transform import (
     normalize_phase,
     transform,
 )
-from london_data_model.pipelines.schools.fetch import fetch as _fetch_sources
 from london_data_model.pipelines.schools.validate import validate
 from london_data_model.pipelines.schools.pipeline import (
     _build_pipeline_config,
+    _fetch_official_sources,
     _preflight_official_mode,
 )
 from london_data_model.settings import DOCS_DATA_DIR, PROJECT_ROOT
@@ -362,7 +362,6 @@ def run_london(
     """
     pipeline_config = _build_pipeline_config(load_pipeline_config(), input_mode=input_mode)
     threshold_config = load_threshold_config()
-    _preflight_official_mode(pipeline_config)
 
     borough_ids = (
         [b.strip() for b in boroughs.split(",") if b.strip()]
@@ -381,16 +380,9 @@ def run_london(
     input_mode_effective = str(pipeline_config.get("input_mode", "sample")).lower()
     fetch_provenances = []
     if input_mode_effective == "official":
-        # Run fetch (skips if files already exist) to collect per-source provenance
-        official_input = pipeline_config.get("official_input", {})
-        schools_dest = PROJECT_ROOT / str(official_input.get("schools_path", "data/raw/gias_establishments.csv"))
-        ofsted_dest = PROJECT_ROOT / str(official_input.get("ofsted_path", "data/raw/ofsted_state_funded_schools.csv"))
-        try:
-            fetch_result = _fetch_sources(pipeline_config, schools_dest, ofsted_dest)
-            fetch_provenances = fetch_result.provenances
-        except Exception as exc:  # never let provenance failure abort a run
-            LOGGER.warning("Could not build source provenance: %s", exc)
-
+        fetch_result = _fetch_official_sources(pipeline_config)
+        fetch_provenances = fetch_result.provenances
+        _preflight_official_mode(pipeline_config)
         all_records, sources, base_notes = load_official_records(pipeline_config)
         LOGGER.info("Loaded %d total records from official sources", len(all_records))
     else:
