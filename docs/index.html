@@ -352,6 +352,12 @@
         color: var(--accent);
       }
 
+      .search-summary-note {
+        margin: -4px 0 14px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
       /* ── School cards ─────────────────────────────────── */
       .school-grid {
         display: grid;
@@ -432,6 +438,33 @@
         font-size: 13px;
         color: var(--muted);
         line-height: 1.4;
+      }
+
+      .quality-flags {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 2px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid #f1d4a5;
+        background: #fffbeb;
+      }
+
+      .quality-flags strong {
+        font-size: 12px;
+        color: #92400e;
+      }
+
+      .quality-flags ul {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .quality-flags li {
+        margin: 0;
       }
 
       .school-detail-row {
@@ -714,7 +747,7 @@
       <!-- ── Postcode search ────────────────────────────── -->
       <div class="card" style="margin-top:22px;">
         <h2 style="margin-top:0;">Find Schools Near a Postcode</h2>
-        <p class="small" style="margin-top:-4px;">Enter any UK postcode to see all schools in the dataset ranked by distance from that point.</p>
+        <p class="small" style="margin-top:-4px;">Enter any UK postcode to see the nearest London schools within 10 km, ranked by distance from that point.</p>
         <div class="search-bar">
           <input
             class="search-input"
@@ -812,7 +845,7 @@
           <p class="small">Comma-separated borough IDs.</p>
         </div>
         <div class="card">
-          <h3>KT19 pilot (sample mode)</h3>
+          <h3>KT19 pilot (historic sample run)</h3>
           <pre>ldm schools run --area KT19 --input-mode sample</pre>
           <p class="small">Runs the original pilot area in sample mode.</p>
         </div>
@@ -957,7 +990,7 @@
             .then(d => {
               if (!d) return;
               document.getElementById("kt19-stats").innerHTML =
-                `<strong>${d.school_count_total || 0}</strong> schools &nbsp;·&nbsp; input mode: ${d.input_mode || "sample"}`;
+                `<strong>${d.school_count_total || 0}</strong> schools &nbsp;·&nbsp; historic pilot run: ${d.input_mode || "sample"}`;
               document.getElementById("pilot-section").style.display = "";
             })
             .catch(() => {});
@@ -1009,6 +1042,8 @@
       let _schoolsCache = null;
       let _thresholdsCache = null;
       let _activePhase = "all";
+      const SEARCH_RADIUS_KM = 10;
+      const SEARCH_FALLBACK_COUNT = 25;
 
       function haversineKm(lat1, lon1, lat2, lon2) {
         const R = 6371;
@@ -1091,6 +1126,39 @@
         return (n >= 0 ? "+" : "") + n.toFixed(2);
       }
 
+      function formatPostcode(raw) {
+        const compact = String(raw || "").replace(/\s+/g, "").toUpperCase();
+        if (compact.length <= 3) return compact;
+        return compact.slice(0, -3) + " " + compact.slice(-3);
+      }
+
+      function qualityFlagLabel(flag) {
+        const labels = {
+          missing_ofsted_rating: "Ofsted overall rating is missing",
+          missing_inspection_date: "Latest inspection date is missing",
+          missing_coordinates: "Map coordinates are missing",
+          missing_website: "School website is missing",
+          missing_telephone: "Telephone number is missing",
+          missing_capacity: "School capacity is missing",
+          missing_pupil_count: "Pupil count is missing",
+        };
+        if (labels[flag]) return labels[flag];
+        return String(flag || "")
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, c => c.toUpperCase());
+      }
+
+      function renderSearchSummary(meta, filteredCount, postcode, sourceLabel) {
+        const suffix = filteredCount !== 1 ? "s" : "";
+        let note = `Showing <strong>${filteredCount}</strong> school${suffix} near <strong>${postcode}</strong>, sorted by distance <span style="color:var(--muted);">(${sourceLabel})</span>.`;
+        if (meta && meta.usedFallback) {
+          note += ` No schools were found within <strong>${meta.radiusKm} km</strong>, so the nearest <strong>${meta.fallbackCount}</strong> results are shown instead.`;
+        } else if (meta && meta.isRadiusLimited) {
+          note += ` Results are limited to schools within <strong>${meta.radiusKm} km</strong> of the searched postcode.`;
+        }
+        return note;
+      }
+
       function renderResultsStat(value, label, extraClass) {
         if (value == null) return "";
         return `<div class="result-stat${extraClass ? " " + extraClass : ""}">
@@ -1139,6 +1207,13 @@
           : s.data_quality_status === "partial"
           ? `<span class="badge badge-warn">Partial data</span>`
           : `<span class="badge badge-poor">Poor data</span>`;
+        const qualityFlags = Array.isArray(s.data_quality_flags) ? s.data_quality_flags.filter(Boolean) : [];
+        const qualityFlagsHtml = qualityFlags.length
+          ? `<div class="quality-flags">
+               <strong>Missing or incomplete data</strong>
+               <ul>${qualityFlags.map(flag => `<li>${qualityFlagLabel(flag)}</li>`).join("")}</ul>
+             </div>`
+          : "";
 
         // ── Accessibility band + proximity score — live from search distance ──
         // We recalculate these from _dist_km (distance from the user's postcode)
@@ -1188,6 +1263,7 @@
           infoRow("Admissions",        s.admissions_policy),
           infoRow("Religious character", s.religious_character),
           infoRow("Sixth form",        sixthFormVal),
+          infoRow("Status",            s.is_open === true ? "Open" : s.is_open === false ? "Closed" : null),
           infoRow("Free school meals", fsmVal),
           infoRow("Deprivation band",  s.ofsted_deprivation_band),
           infoRow("Telephone",         telVal),
@@ -1276,6 +1352,7 @@
           <div class="school-address">${s.address || ""}${s.postcode ? ", " + s.postcode : ""}</div>
           ${accessRow}
           ${infoGridHtml}
+          ${qualityFlagsHtml}
           <div class="school-detail-row">
             ${s.establishment_type ? `<span>${s.establishment_type}</span>` : ""}
             ${inspDate ? `<span>${inspDate}</span>` : ""}
@@ -1287,7 +1364,7 @@
         </div>`;
       }
 
-      function renderResults(schools, postcode) {
+      function renderResults(schools, postcode, meta) {
         const resultsEl = document.getElementById("search-results");
         const filterEl  = document.getElementById("phase-filter");
 
@@ -1305,10 +1382,8 @@
           ? "London-wide dataset"
           : "KT19 pilot dataset";
         resultsEl.innerHTML = `
-          <p class="small" style="margin-bottom:12px;">
-            Showing <strong>${filtered.length}</strong> school${filtered.length !== 1 ? "s" : ""}
-            near <strong>${postcode.toUpperCase()}</strong>, sorted by distance
-            <span style="color:var(--muted);">(${sourceLabel})</span>.
+          <p class="search-summary-note">
+            ${renderSearchSummary(meta, filtered.length, postcode, sourceLabel)}
           </p>
           <div class="school-grid">${filtered.map(renderSchoolCard).join("")}</div>`;
       }
@@ -1352,7 +1427,7 @@
         btn.disabled = true;
         btn.textContent = "Searching…";
         filterEl.style.display = "none";
-        resultsEl.innerHTML = `<div class="search-msg">Looking up ${raw}…</div>`;
+        resultsEl.innerHTML = `<div class="search-msg">Looking up ${formatPostcode(raw)}…</div>`;
 
         try {
           // 1. Geocode the postcode
@@ -1363,6 +1438,7 @@
           }
           const { result } = await geo.json();
           const { latitude, longitude } = result;
+          const formattedPostcode = result.postcode || formatPostcode(raw);
 
           // 2. Load school data and thresholds in parallel (both cached after first call)
           const [schools] = await Promise.all([loadSchools(), loadThresholds()]);
@@ -1373,11 +1449,23 @@
             .map(s => ({ ...s, _dist_km: haversineKm(latitude, longitude, s.latitude, s.longitude) }))
             .sort((a, b) => a._dist_km - b._dist_km);
 
-          renderResults(withDist, raw);
+          const withinRadius = withDist.filter(s => s._dist_km <= SEARCH_RADIUS_KM);
+          const visibleResults = withinRadius.length > 0
+            ? withinRadius
+            : withDist.slice(0, SEARCH_FALLBACK_COUNT);
+          const searchMeta = {
+            radiusKm: SEARCH_RADIUS_KM,
+            fallbackCount: SEARCH_FALLBACK_COUNT,
+            isRadiusLimited: withinRadius.length > 0 && withinRadius.length < withDist.length,
+            usedFallback: withinRadius.length === 0,
+          };
+
+          renderResults(visibleResults, formattedPostcode, searchMeta);
 
           // Store for phase filtering
-          _schoolsCache._lastResults = withDist;
-          _schoolsCache._lastPostcode = raw;
+          _schoolsCache._lastResults = visibleResults;
+          _schoolsCache._lastPostcode = formattedPostcode;
+          _schoolsCache._lastSearchMeta = searchMeta;
 
         } catch (err) {
           filterEl.style.display = "none";
@@ -1401,7 +1489,7 @@
             document.querySelectorAll(".phase-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
             if (_schoolsCache && _schoolsCache._lastResults) {
-              renderResults(_schoolsCache._lastResults, _schoolsCache._lastPostcode);
+              renderResults(_schoolsCache._lastResults, _schoolsCache._lastPostcode, _schoolsCache._lastSearchMeta);
             }
           });
         });
