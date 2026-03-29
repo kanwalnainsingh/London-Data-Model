@@ -45,3 +45,46 @@ official_input:
     school_urn: URN
     ofsted_rating_latest: Overall effectiveness
     ofsted_inspection_date_latest: Published date
+# ── KS4 (GCSE) performance tables ─────────────────────────────────────────────
+# Source: DfE "Find school performance data" — Key Stage 4
+#   https://www.find-school-performance-data.service.gov.uk/download-data
+#   Select: KS4 / All schools / England / Latest year → download CSV or ZIP
+#   Place the extracted CSV at the path below (or set fetch.url for auto-download).
+# Column names below match the standard DfE england_ks4final.csv layout.
+# If your download uses different headers, update the right-hand values accordingly.
+ks4_input:
+  enabled: false
+  path: data/raw/ks4_performance.csv
+  format: csv
+  fetch:
+    skip_if_exists: true
+    # Set to a direct CSV or ZIP URL to enable auto-download, e.g.:
+    # url: https://content.explore-education-statistics.service.gov.uk/api/releases/.../files/...
+    url:
+  column_map:
+    school_urn: URN
+    ks4_progress8: P8MEA                    # Progress 8 score (school average, e.g. +0.35)
+    ks4_attainment8: ATT8SCR                # Attainment 8 score (0-90 range, e.g. 52.3)
+    ks4_strong_pass_pct: PTL2BASICS_95      # % grade 5+ English & Maths (strong pass)
+    ks4_standard_pass_pct: PTL2BASICS_94    # % grade 4+ English & Maths (standard pass)
+# ── KS5 (A-level) performance tables ──────────────────────────────────────────
+# Source: DfE "Find school performance data" — Key Stage 5
+#   https://www.find-school-performance-data.service.gov.uk/download-data
+#   Select: KS5 / All schools / England / Latest year → download CSV or ZIP
+#   Place the extracted CSV at the path below (or set fetch.url for auto-download).
+# Column names below match the standard DfE england_ks5final.csv layout.
+ks5_input:
+  enabled: false
+  path: data/raw/ks5_performance.csv
+  format: csv
+  fetch:
+    skip_if_exists: true
+    # Set to a direct CSV or ZIP URL to enable auto-download, e.g.:
+    # url: https://content.explore-education-statistics.service.gov.uk/api/releases/.../files/...
+    url:
+  column_map:
+    school_urn: URN
+    ks5_avg_point_score: A_ATT_AVG_PT_SCR   # Average A-level point score per entry
+    ks5_a_star_a_pct: A_A_STAR_A            # % A*/A grades
+    ks5_pass_rate_pct: A_PASS               # A*-E pass rate %
+    ks5_entries: TALLPPE_ALEV_1618          # Total A-level student entries (16-18)

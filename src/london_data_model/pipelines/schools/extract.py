@@ -63,6 +63,93 @@ def _load_records(path: Path, file_format: str) -> List[Dict[str, Any]]:
     raise ValueError("Unsupported input format: {0}".format(file_format))
 
 
+def _load_csv_rows_utf8(path: Path) -> List[Dict[str, Any]]:
+    """Load CSV rows with UTF-8 encoding (used for DfE performance tables)."""
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        return list(csv.DictReader(handle))
+
+
+def _load_performance_table(
+    input_cfg: Dict[str, Any],
+    label: str,
+) -> Tuple[Dict[str, Dict[str, Any]], Optional[SourceDescriptor]]:
+    """Load a DfE performance table CSV and return a URN-keyed lookup dict.
+
+    Returns (records_by_urn, source_descriptor). If the file is disabled or
+    missing, returns ({}, None) — callers treat missing performance data as
+    optional enrichment only.
+    """
+    if not input_cfg.get("enabled", False):
+        return {}, None
+
+    raw_path = str(input_cfg.get("path", ""))
+    if not raw_path:
+        LOGGER.warning("%s: no path configured, skipping", label)
+        return {}, None
+
+    path = _resolve_input_path(raw_path)
+    column_map = input_cfg.get("column_map", {})
+
+    if not path.exists():
+        LOGGER.warning(
+            "%s file not found at %s — download manually (see schools.yml for instructions)",
+            label,
+            path,
+        )
+        return {}, SourceDescriptor(
+            source_name=label,
+            source_type=label,
+            source_path=str(path),
+            status="missing",
+            notes=["File not found; performance data will be absent from output."],
+        )
+
+    # DfE performance CSVs use UTF-8; fall back to cp1252 if needed
+    try:
+        rows = _load_csv_rows_utf8(path)
+    except UnicodeDecodeError:
+        LOGGER.warning("%s: UTF-8 decode failed, retrying with cp1252", label)
+        rows = _load_csv_rows(path)
+
+    records_by_urn: Dict[str, Dict[str, Any]] = {}
+    for row in rows:
+        mapped = _map_performance_row(row, column_map)
+        urn = str(mapped.get("school_urn") or "").strip()
+        if urn:
+            records_by_urn[urn] = mapped
+
+    LOGGER.info("Loaded %d %s records", len(records_by_urn), label)
+    return records_by_urn, SourceDescriptor(
+        source_name=label,
+        source_type=label,
+        source_path=str(path),
+        status="loaded",
+        notes=["Loaded {0} school records.".format(len(records_by_urn))],
+    )
+
+
+def _map_performance_row(row: Dict[str, Any], column_map: Dict[str, str]) -> Dict[str, Any]:
+    """Map raw DfE performance row through column_map, normalising suppressed values.
+
+    DfE tables use sentinel strings for suppressed/unavailable data:
+      SUPP  — suppressed (fewer than 5-10 pupils; treat as None)
+      NE    — not entered / not applicable
+      NA    — not available
+      LOWCOV — low coverage
+      NP    — not published
+    Any of these become None in the output.
+    """
+    _SUPPRESSED = {"supp", "ne", "na", "lowcov", "np", ""}
+    mapped: Dict[str, Any] = {}
+    for target_field, source_field in column_map.items():
+        raw = row.get(source_field)
+        if raw is None or str(raw).strip().lower() in _SUPPRESSED:
+            mapped[target_field] = None
+        else:
+            mapped[target_field] = str(raw).strip()
+    return mapped
+
+
 def _validate_column_map(name: str, column_map: Dict[str, str]) -> None:
     if not column_map:
         raise OfficialSourceConfigError(
@@ -164,6 +251,31 @@ def _merge_records(
     return merged
 
 
+def _merge_performance(
+    school_records: List[Dict[str, Any]],
+    performance_by_urn: Dict[str, Dict[str, Any]],
+    merge_key: str = "school_urn",
+) -> List[Dict[str, Any]]:
+    """Enrich school records with performance data, matched by URN.
+
+    Only performance fields (non-merge-key) are copied in; existing school
+    fields are never overwritten, so GIAS/Ofsted data always wins on clashes.
+    """
+    merged: List[Dict[str, Any]] = []
+    for record in school_records:
+        urn = str(record.get(merge_key) or "").strip()
+        perf = performance_by_urn.get(urn)
+        if perf:
+            enriched = dict(record)
+            for k, v in perf.items():
+                if k != merge_key:
+                    enriched[k] = v
+            merged.append(enriched)
+        else:
+            merged.append(record)
+    return merged
+
+
 def filter_by_la_codes(
     records: List[Dict[str, Any]],
     la_codes: List[int],
@@ -257,6 +369,27 @@ def load_official_records(
             notes=["Configured as the local Ofsted state-funded schools inspection file export."],
         ),
     ]
+
+    # ── KS4 (GCSE) merge ────────────────────────────────────────────────────
+    ks4_by_urn, ks4_source = _load_performance_table(
+        pipeline_config.get("ks4_input", {}), label="ks4"
+    )
+    if ks4_by_urn:
+        merged_records = _merge_performance(merged_records, ks4_by_urn, merge_key=merge_key)
+        notes.append("Merged KS4 performance data for {0} schools.".format(len(ks4_by_urn)))
+    if ks4_source:
+        sources.append(ks4_source)
+
+    # ── KS5 (A-level) merge ─────────────────────────────────────────────────
+    ks5_by_urn, ks5_source = _load_performance_table(
+        pipeline_config.get("ks5_input", {}), label="ks5"
+    )
+    if ks5_by_urn:
+        merged_records = _merge_performance(merged_records, ks5_by_urn, merge_key=merge_key)
+        notes.append("Merged KS5 performance data for {0} schools.".format(len(ks5_by_urn)))
+    if ks5_source:
+        sources.append(ks5_source)
+
     return merged_records, sources, notes
 
 

@@ -31,6 +31,8 @@ _ODS_NS = {
 class FetchResult:
     schools_path: Optional[Path] = None
     ofsted_path: Optional[Path] = None
+    ks4_path: Optional[Path] = None
+    ks5_path: Optional[Path] = None
     notes: List[str] = field(default_factory=list)
 
 
@@ -222,8 +224,70 @@ def _fetch_ofsted(fetch_cfg: Dict, dest: Path) -> str:
             ods_tmp.unlink()
 
 
+def _extract_csv_from_zip(zip_path: Path, csv_dest: Path) -> None:
+    """Extract the first CSV file found in a ZIP archive to csv_dest."""
+    with zipfile.ZipFile(zip_path) as zf:
+        csv_names = [n for n in zf.namelist() if n.lower().endswith(".csv")]
+        if not csv_names:
+            raise FetchError(
+                "No CSV file found inside ZIP: {0}".format(zip_path)
+            )
+        # Prefer a file whose name contains 'ks4' or 'ks5' or 'final'; else take first
+        preferred = next(
+            (n for n in csv_names if any(k in n.lower() for k in ("ks4", "ks5", "final", "school"))),
+            csv_names[0],
+        )
+        csv_dest.parent.mkdir(parents=True, exist_ok=True)
+        with zf.open(preferred) as src, open(csv_dest, "wb") as dst:
+            while True:
+                chunk = src.read(65536)
+                if not chunk:
+                    break
+                dst.write(chunk)
+    LOGGER.info(
+        "Extracted %s → %s (%.1f MB)",
+        preferred,
+        csv_dest.name,
+        csv_dest.stat().st_size / 1_048_576,
+    )
+
+
+def _fetch_performance_table(label: str, input_cfg: Dict, dest: Path) -> str:
+    """Download a DfE performance-table CSV (or ZIP containing a CSV) if configured.
+
+    Returns a short status note. Silently skips when no URL is configured —
+    the caller must manually place the CSV at dest.
+    """
+    fetch_cfg = input_cfg.get("fetch", {})
+    skip_if_exists = fetch_cfg.get("skip_if_exists", True)
+    if skip_if_exists and dest.exists():
+        LOGGER.info("%s file exists, skipping download: %s", label, dest)
+        return "{0}: skipped (file exists)".format(label)
+
+    url = str(fetch_cfg.get("url") or "").strip()
+    if not url:
+        return (
+            "{0}: skipped (no URL configured — download manually from "
+            "https://www.find-school-performance-data.service.gov.uk/download-data "
+            "and place at {1})".format(label, dest)
+        )
+
+    if url.lower().endswith(".zip"):
+        zip_tmp = dest.with_suffix(".zip")
+        try:
+            _download_file(url, zip_tmp)
+            _extract_csv_from_zip(zip_tmp, dest)
+        finally:
+            if zip_tmp.exists():
+                zip_tmp.unlink()
+    else:
+        _download_file(url, dest)
+
+    return "{0}: downloaded from {1}".format(label, url)
+
+
 def fetch(pipeline_config: Dict, schools_dest: Path, ofsted_dest: Path) -> FetchResult:
-    """Download GIAS and Ofsted source files if not already present."""
+    """Download GIAS, Ofsted, and (optionally) KS4/KS5 performance files."""
     fetch_cfg = pipeline_config.get("official_input", {}).get("fetch", {})
 
     result = FetchResult()
@@ -232,5 +296,21 @@ def fetch(pipeline_config: Dict, schools_dest: Path, ofsted_dest: Path) -> Fetch
 
     result.notes.append(_fetch_ofsted(fetch_cfg, ofsted_dest))
     result.ofsted_path = ofsted_dest
+
+    # KS4 (GCSE) performance tables — optional; only fetch when enabled
+    ks4_cfg = pipeline_config.get("ks4_input", {})
+    if ks4_cfg.get("enabled", False):
+        from london_data_model.settings import PROJECT_ROOT  # avoid circular at module level
+        ks4_dest = PROJECT_ROOT / str(ks4_cfg.get("path", "data/raw/ks4_performance.csv"))
+        result.notes.append(_fetch_performance_table("ks4", ks4_cfg, ks4_dest))
+        result.ks4_path = ks4_dest
+
+    # KS5 (A-level) performance tables — optional; only fetch when enabled
+    ks5_cfg = pipeline_config.get("ks5_input", {})
+    if ks5_cfg.get("enabled", False):
+        from london_data_model.settings import PROJECT_ROOT  # noqa: PLC0415
+        ks5_dest = PROJECT_ROOT / str(ks5_cfg.get("path", "data/raw/ks5_performance.csv"))
+        result.notes.append(_fetch_performance_table("ks5", ks5_cfg, ks5_dest))
+        result.ks5_path = ks5_dest
 
     return result

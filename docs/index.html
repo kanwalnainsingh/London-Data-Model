@@ -457,6 +457,51 @@
         font-size: 14px;
       }
 
+      /* ── Exam results panels inside school cards ──────── */
+      .results-section {
+        background: #f8f5ee;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-top: 2px;
+      }
+
+      .results-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+
+      .results-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 12px;
+      }
+
+      .result-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .result-stat strong {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1.1;
+      }
+
+      .result-stat span {
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.2;
+      }
+
+      .result-stat.p8-positive strong { color: #065f46; }
+      .result-stat.p8-negative strong { color: #7f1d1d; }
+
       @media (max-width: 640px) {
         .two-col { grid-template-columns: 1fr; }
         .borough-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
@@ -775,6 +820,31 @@
         return "phase-all-through";
       }
 
+      function fmtPct(v) {
+        if (v == null) return null;
+        return Math.round(Number(v)) + "%";
+      }
+
+      function fmtNum(v, decimals) {
+        if (v == null) return null;
+        const n = Number(v);
+        return Number.isFinite(n) ? n.toFixed(decimals != null ? decimals : 1) : null;
+      }
+
+      function fmtP8(v) {
+        if (v == null) return null;
+        const n = Number(v);
+        if (!Number.isFinite(n)) return null;
+        return (n >= 0 ? "+" : "") + n.toFixed(2);
+      }
+
+      function renderResultsStat(value, label, extraClass) {
+        if (value == null) return "";
+        return `<div class="result-stat${extraClass ? " " + extraClass : ""}">
+          <strong>${value}</strong><span>${label}</span>
+        </div>`;
+      }
+
       function renderSchoolCard(s) {
         const dist = typeof s._dist_km === "number" ? s._dist_km.toFixed(1) + " km" : "";
         const ofstedLabel = s.ofsted_rating_latest || "No rating";
@@ -785,6 +855,35 @@
           : s.data_quality_status === "partial"
           ? `<span class="badge badge-warn">Partial data</span>`
           : `<span class="badge badge-poor">Poor data</span>`;
+
+        // ── KS4 (GCSE) results panel ─────────────────────────────────────
+        const p8Val   = fmtP8(s.ks4_progress8);
+        const p8Class = s.ks4_progress8 != null
+          ? (Number(s.ks4_progress8) >= 0 ? "p8-positive" : "p8-negative") : "";
+        const ks4Stats = [
+          renderResultsStat(p8Val,                         "Progress 8",            p8Class),
+          renderResultsStat(fmtNum(s.ks4_attainment8),    "Attainment 8",          ""),
+          renderResultsStat(fmtPct(s.ks4_strong_pass_pct), "Grade 5+ Eng & Maths", ""),
+          renderResultsStat(fmtPct(s.ks4_standard_pass_pct), "Grade 4+ Eng & Maths", ""),
+        ].join("");
+        const ks4Html = ks4Stats.trim()
+          ? `<div class="results-section">
+               <div class="results-label">GCSE Results</div>
+               <div class="results-grid">${ks4Stats}</div>
+             </div>` : "";
+
+        // ── KS5 (A-level) results panel ──────────────────────────────────
+        const ks5Stats = [
+          renderResultsStat(fmtNum(s.ks5_avg_point_score, 1), "Avg A-level pts / entry", ""),
+          renderResultsStat(fmtPct(s.ks5_a_star_a_pct),       "A*/A grade",              ""),
+          renderResultsStat(fmtPct(s.ks5_pass_rate_pct),      "A*–E pass rate",          ""),
+          renderResultsStat(s.ks5_entries != null ? String(s.ks5_entries) : null, "A-level students", ""),
+        ].join("");
+        const ks5Html = ks5Stats.trim()
+          ? `<div class="results-section">
+               <div class="results-label">A-Level Results</div>
+               <div class="results-grid">${ks5Stats}</div>
+             </div>` : "";
 
         return `<div class="school-card">
           <div class="school-card-header">
@@ -802,6 +901,7 @@
             ${inspDate ? `<span>${inspDate}</span>` : ""}
             ${s.school_urn ? `<span>URN ${s.school_urn}</span>` : ""}
           </div>
+          ${ks4Html}${ks5Html}
         </div>`;
       }
 

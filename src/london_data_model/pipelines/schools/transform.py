@@ -9,6 +9,10 @@ from london_data_model.types import ExtractResult, PipelineContext, SchoolRecord
 
 LOGGER = logging.getLogger(__name__)
 EARTH_RADIUS_KM = 6371.0
+
+# DfE performance tables use these strings for suppressed / not-available data
+_DFE_SUPPRESSED = frozenset({"supp", "ne", "na", "lowcov", "np", ""})
+
 _OFSTED_RATING_MAP = {
     "1": "Outstanding",
     "2": "Good",
@@ -25,6 +29,25 @@ EXCLUDED_ESTABLISHMENT_TERMS = (
     "further education",
     "sixth form college",
 )
+
+
+def _normalize_dfe_number(value: Any) -> Optional[float]:
+    """Convert a DfE performance table value to float, returning None for suppressed entries."""
+    if value is None:
+        return None
+    text = str(value).strip()
+    if text.lower() in _DFE_SUPPRESSED:
+        return None
+    try:
+        return float(text)
+    except (ValueError, TypeError):
+        return None
+
+
+def _normalize_dfe_int(value: Any) -> Optional[int]:
+    """Convert a DfE performance table value to int, returning None for suppressed entries."""
+    num = _normalize_dfe_number(value)
+    return int(round(num)) if num is not None else None
 
 
 def normalize_phase(phase: Optional[str]) -> Optional[str]:
@@ -208,6 +231,16 @@ def build_school_record(raw_record: Dict[str, Any], context: PipelineContext) ->
         ),
         ofsted_inspection_date_latest=raw_record.get("ofsted_inspection_date_latest"),
         ofsted_report_url=raw_record.get("ofsted_report_url"),
+        # KS4 (GCSE) — present only when ks4_input is enabled and URN matched
+        ks4_progress8=_normalize_dfe_number(raw_record.get("ks4_progress8")),
+        ks4_attainment8=_normalize_dfe_number(raw_record.get("ks4_attainment8")),
+        ks4_strong_pass_pct=_normalize_dfe_number(raw_record.get("ks4_strong_pass_pct")),
+        ks4_standard_pass_pct=_normalize_dfe_number(raw_record.get("ks4_standard_pass_pct")),
+        # KS5 (A-level) — present only when ks5_input is enabled and URN matched
+        ks5_avg_point_score=_normalize_dfe_number(raw_record.get("ks5_avg_point_score")),
+        ks5_a_star_a_pct=_normalize_dfe_number(raw_record.get("ks5_a_star_a_pct")),
+        ks5_pass_rate_pct=_normalize_dfe_number(raw_record.get("ks5_pass_rate_pct")),
+        ks5_entries=_normalize_dfe_int(raw_record.get("ks5_entries")),
     )
 
 

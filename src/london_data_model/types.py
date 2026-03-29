@@ -22,6 +22,16 @@ SCHOOL_OUTPUT_FIELDS = [
     "ofsted_rating_latest",
     "ofsted_inspection_date_latest",
     "ofsted_report_url",
+    # KS4 (GCSE) — secondary and all-through schools
+    "ks4_progress8",
+    "ks4_attainment8",
+    "ks4_strong_pass_pct",
+    "ks4_standard_pass_pct",
+    # KS5 (A-level) — secondary/all-through with sixth form
+    "ks5_avg_point_score",
+    "ks5_a_star_a_pct",
+    "ks5_pass_rate_pct",
+    "ks5_entries",
     "data_quality_status",
     "data_quality_flags",
 ]
@@ -68,6 +78,16 @@ class SchoolRecord:
     ofsted_rating_latest: Optional[str] = None
     ofsted_inspection_date_latest: Optional[str] = None
     ofsted_report_url: Optional[str] = None
+    # KS4 (GCSE) results — populated for secondary and all-through schools
+    ks4_progress8: Optional[float] = None           # Progress 8 score (-4 to +4 range)
+    ks4_attainment8: Optional[float] = None         # Attainment 8 score (0–90 range)
+    ks4_strong_pass_pct: Optional[float] = None     # % grade 5+ in English & Maths
+    ks4_standard_pass_pct: Optional[float] = None   # % grade 4+ in English & Maths
+    # KS5 (A-level) results — populated for schools with a sixth form
+    ks5_avg_point_score: Optional[float] = None     # Average point score per A-level entry
+    ks5_a_star_a_pct: Optional[float] = None        # % A*/A grades at A-level
+    ks5_pass_rate_pct: Optional[float] = None       # % A*–E pass rate
+    ks5_entries: Optional[int] = None               # Total A-level student entries
     data_quality_status: str = "partial"
     data_quality_flags: List[str] = field(default_factory=list)
 
