@@ -8,6 +8,7 @@ from unittest.mock import patch
 from london_data_model.pipelines.schools.publish import publish
 from london_data_model.types import (
     AreaConfig,
+    ExcludedRecord,
     ExtractResult,
     PipelineContext,
     SchoolRecord,
@@ -140,6 +141,72 @@ class PublishSummaryTestCase(unittest.TestCase):
             {"very_close": 1, "close": 1, "moderate": 1},
         )
         self.assertEqual(status_payload["missing_ofsted_count"], 1)
+
+    def test_publish_includes_exclusion_reasons_in_internal_manifest(self) -> None:
+        context = PipelineContext(
+            pipeline_name="schools",
+            area="KT19",
+            run_id="publish-exclusions",
+            started_at=datetime(2026, 3, 29, 17, 5, tzinfo=timezone.utc),
+            config_path=None,
+            area_config=AreaConfig(
+                area_id="KT19",
+                area_type="district",
+                label="KT19",
+                search_point_method="user_supplied",
+                latitude=51.3490,
+                longitude=-0.2680,
+            ),
+            pipeline_config={"version": 1, "input_mode": "official"},
+            threshold_config=load_threshold_config(),
+        )
+        transformed = TransformResult(
+            records=[],
+            excluded_record_count=2,
+            excluded_records=[
+                ExcludedRecord(
+                    school_name="No Coordinates",
+                    school_urn="2001",
+                    exclusion_reasons=["missing_coordinates"],
+                ),
+                ExcludedRecord(
+                    school_name="Unknown Status",
+                    school_urn="2002",
+                    exclusion_reasons=["unknown_open_status", "outside_distance_threshold"],
+                ),
+            ],
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            marts_dir = Path(tmp_dir) / "marts"
+            manifests_dir = Path(tmp_dir) / "manifests"
+            docs_data_dir = Path(tmp_dir) / "docs-data"
+            marts_dir.mkdir()
+            manifests_dir.mkdir()
+            docs_data_dir.mkdir()
+
+            with patch("london_data_model.pipelines.schools.publish.MARTS_DATA_DIR", marts_dir), patch(
+                "london_data_model.pipelines.schools.publish.MANIFESTS_DATA_DIR", manifests_dir
+            ), patch("london_data_model.pipelines.schools.publish.DOCS_DATA_DIR", docs_data_dir):
+                result = publish(ExtractResult(), transformed, ValidateResult(), context)
+
+            manifest_payload = json.loads(
+                Path(result.output_files["manifest_json"]).read_text(encoding="utf-8")
+            )
+
+        self.assertEqual(
+            manifest_payload["exclusion_counts"],
+            {
+                "missing_coordinates": 1,
+                "outside_distance_threshold": 1,
+                "unknown_open_status": 1,
+            },
+        )
+        self.assertEqual(len(manifest_payload["excluded_records"]), 2)
+        self.assertEqual(
+            manifest_payload["excluded_records"][0]["exclusion_reasons"],
+            ["missing_coordinates"],
+        )
 
 
 if __name__ == "__main__":

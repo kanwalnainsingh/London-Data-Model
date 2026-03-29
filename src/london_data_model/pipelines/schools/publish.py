@@ -149,6 +149,13 @@ def _build_input_sources(extracted: ExtractResult) -> list:
     ]
 
 
+def _build_exclusion_summary(transformed: TransformResult) -> dict:
+    counts = Counter()
+    for record in transformed.excluded_records:
+        counts.update(record.exclusion_reasons)
+    return dict(sorted(counts.items()))
+
+
 def publish(
     extracted: ExtractResult,
     transformed: TransformResult,
@@ -219,6 +226,8 @@ def publish(
             "validated": len(validated.records),
             "published": len(validated.records),
         },
+        "exclusion_counts": _build_exclusion_summary(transformed),
+        "excluded_records": [record.to_dict() for record in transformed.excluded_records],
         "quality_counts": validated.quality_summary,
         "notes": validated.notes,
     }

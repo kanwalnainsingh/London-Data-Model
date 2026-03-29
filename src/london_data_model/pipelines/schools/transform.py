@@ -4,7 +4,13 @@ import logging
 import math
 from typing import Any, Dict, Optional
 
-from london_data_model.types import ExtractResult, PipelineContext, SchoolRecord, TransformResult
+from london_data_model.types import (
+    ExcludedRecord,
+    ExtractResult,
+    PipelineContext,
+    SchoolRecord,
+    TransformResult,
+)
 
 
 LOGGER = logging.getLogger(__name__)
@@ -192,6 +198,27 @@ def is_in_scope_school(record: SchoolRecord) -> bool:
     return True
 
 
+def derive_exclusion_reasons(record: SchoolRecord, threshold_config: Dict[str, Any]) -> list:
+    reasons = []
+
+    if record.phase not in ("primary", "secondary", "all_through"):
+        reasons.append("invalid_phase")
+    if record.is_open is None:
+        reasons.append("unknown_open_status")
+    elif record.is_open is False:
+        reasons.append("closed_school")
+    if not is_mainstream_establishment(record.establishment_type):
+        reasons.append("non_mainstream")
+
+    if record.distance_km is None:
+        if record.latitude is None or record.longitude is None:
+            reasons.append("missing_coordinates")
+    elif not is_within_max_distance(record, threshold_config):
+        reasons.append("outside_distance_threshold")
+
+    return reasons
+
+
 def is_within_max_distance(record: SchoolRecord, threshold_config: Dict[str, Any]) -> bool:
     if record.distance_km is None:
         # No coordinates → distance unknown; exclude rather than pass through.
@@ -309,7 +336,7 @@ def build_school_record(raw_record: Dict[str, Any], context: PipelineContext) ->
         longitude=raw_record.get("longitude"),
         phase=phase,
         establishment_type=str(raw_record.get("establishment_type", "")),
-        is_open=is_open if is_open is not None else False,
+        is_open=is_open,
         distance_km=distance_km,
         accessibility_band=assign_accessibility_band(
             phase=phase,
@@ -393,13 +420,23 @@ def transform(extracted: ExtractResult, context: PipelineContext) -> TransformRe
     )
 
     records = []
-    excluded_record_count = 0
+    excluded_records = []
     for raw_record in extracted.records:
         record = build_school_record(raw_record=raw_record, context=context)
-        if is_in_scope_school(record) and is_within_max_distance(record, context.threshold_config):
+        exclusion_reasons = derive_exclusion_reasons(record, context.threshold_config)
+        if not exclusion_reasons:
             records.append(record)
         else:
-            excluded_record_count += 1
+            excluded_records.append(
+                ExcludedRecord(
+                    school_name=record.school_name,
+                    school_urn=record.school_urn,
+                    phase=record.phase,
+                    is_open=record.is_open,
+                    distance_km=record.distance_km,
+                    exclusion_reasons=exclusion_reasons,
+                )
+            )
 
     notes = list(extracted.notes)
     notes.append(
@@ -408,10 +445,16 @@ def transform(extracted: ExtractResult, context: PipelineContext) -> TransformRe
     notes.append(
         "Transform applies V1 scope filters for mainstream, open primary/secondary/all-through schools."
     )
+    notes.append("Excluded records now carry machine-readable exclusion reasons for internal diagnostics.")
 
     LOGGER.info(
         "Transform stage completed with %s included records and %s excluded records",
         len(records),
-        excluded_record_count,
+        len(excluded_records),
     )
-    return TransformResult(records=records, excluded_record_count=excluded_record_count, notes=notes)
+    return TransformResult(
+        records=records,
+        excluded_record_count=len(excluded_records),
+        excluded_records=excluded_records,
+        notes=notes,
+    )

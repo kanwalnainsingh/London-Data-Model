@@ -5,6 +5,7 @@ from london_data_model.pipelines.schools.transform import (
     assign_accessibility_band,
     calculate_distance_km,
     calculate_proximity_score,
+    derive_exclusion_reasons,
     is_in_scope_school,
     is_mainstream_establishment,
     normalize_phase,
@@ -184,6 +185,53 @@ class TransformRulesTestCase(unittest.TestCase):
         self.assertEqual(len(result.records), 1)
         self.assertEqual(result.records[0].school_urn, "5")
         self.assertEqual(result.excluded_record_count, 4)
+
+    def test_transform_tracks_missing_coordinates_as_exclusion_reason(self) -> None:
+        extracted = ExtractResult(
+            records=[
+                {
+                    "school_name": "No Coordinates School",
+                    "school_urn": "10",
+                    "address": "10 Road",
+                    "postcode": "KT19 1AF",
+                    "phase": "primary",
+                    "establishment_type": "Community school",
+                    "is_open": "Open",
+                    "latitude": None,
+                    "longitude": None,
+                }
+            ]
+        )
+
+        result = transform(extracted, self.context)
+
+        self.assertEqual(len(result.records), 0)
+        self.assertEqual(result.excluded_record_count, 1)
+        self.assertEqual(result.excluded_records[0].exclusion_reasons, ["missing_coordinates"])
+
+    def test_transform_tracks_unknown_open_status_without_treating_it_as_closed(self) -> None:
+        extracted = ExtractResult(
+            records=[
+                {
+                    "school_name": "Unknown Status School",
+                    "school_urn": "11",
+                    "address": "11 Road",
+                    "postcode": "KT19 1AG",
+                    "phase": "primary",
+                    "establishment_type": "Community school",
+                    "is_open": "Proposed to open",
+                    "latitude": 51.4010,
+                    "longitude": -0.3000,
+                }
+            ]
+        )
+
+        result = transform(extracted, self.context)
+
+        self.assertEqual(len(result.records), 0)
+        self.assertEqual(result.excluded_record_count, 1)
+        self.assertIsNone(result.excluded_records[0].is_open)
+        self.assertEqual(result.excluded_records[0].exclusion_reasons, ["unknown_open_status"])
 
 
 if __name__ == "__main__":

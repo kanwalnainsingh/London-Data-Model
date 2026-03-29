@@ -182,6 +182,19 @@ class SchoolRecord:
 
 
 @dataclass
+class ExcludedRecord:
+    school_name: str = ""
+    school_urn: str = ""
+    phase: Optional[str] = None
+    is_open: Optional[bool] = None
+    distance_km: Optional[float] = None
+    exclusion_reasons: List[str] = field(default_factory=list)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
 class PipelineContext:
     """Run-time context for a pipeline invocation."""
 
@@ -206,6 +219,7 @@ class ExtractResult:
 class TransformResult:
     records: List[SchoolRecord] = field(default_factory=list)
     excluded_record_count: int = 0
+    excluded_records: List[ExcludedRecord] = field(default_factory=list)
     notes: List[str] = field(default_factory=list)
 
 
