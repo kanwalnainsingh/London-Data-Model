@@ -158,6 +158,44 @@ def _add_fringe_schools(
     return added
 
 
+def _write_thresholds_json(threshold_config: Dict[str, Any]) -> None:
+    """Write docs/data/thresholds.json with resolved threshold values for all phases.
+
+    The UI fetches this file at search time so it can compute proximity scores
+    and accessibility bands without any hardcoded constants.  all_through
+    references are resolved to concrete values so the UI receives a flat
+    structure for all three phases.
+    """
+    DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    def _resolve_phase(phase_key: str) -> Dict[str, Any]:
+        cfg = threshold_config.get(phase_key, {})
+        # Follow threshold_profile / proximity_profile aliases
+        t_profile = cfg.get("threshold_profile")
+        p_profile = cfg.get("proximity_profile")
+        base_t = threshold_config.get(t_profile, cfg) if t_profile else cfg
+        base_p = threshold_config.get(p_profile, cfg) if p_profile else cfg
+        return {
+            "very_close_max_km": base_t.get("very_close_max_km"),
+            "close_max_km": base_t.get("close_max_km"),
+            "moderate_max_km": base_t.get("moderate_max_km"),
+            "proximity_zero_at_km": base_p.get("proximity_zero_at_km"),
+            "max_distance_km": base_p.get("max_distance_km"),
+        }
+
+    payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "phases": {
+            "primary": _resolve_phase("primary"),
+            "secondary": _resolve_phase("secondary"),
+            "all_through": _resolve_phase("all_through"),
+        },
+    }
+    path = DOCS_DATA_DIR / "thresholds.json"
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    LOGGER.info("Written thresholds manifest: %s", path)
+
+
 def _write_sources_json(
     provenances: List[SourceProvenance],
     pipeline_config: Dict[str, Any],
@@ -266,6 +304,10 @@ def _publish_london_index(
     # Write data-lineage manifest with source provenance
     if provenances:
         _write_sources_json(provenances, pipeline_config)
+
+    # Write resolved threshold config for the UI
+    if threshold_config:
+        _write_thresholds_json(threshold_config)
 
 
 def run_london(

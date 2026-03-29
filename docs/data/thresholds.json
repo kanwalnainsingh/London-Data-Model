@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-03-29T14:07:01.964835+00:00",
+  "phases": {
+    "primary": {
+      "very_close_max_km": 1,
+      "close_max_km": 2,
+      "moderate_max_km": 4,
+      "proximity_zero_at_km": 15,
+      "max_distance_km": 15
+    },
+    "secondary": {
+      "very_close_max_km": 2,
+      "close_max_km": 5,
+      "moderate_max_km": 8,
+      "proximity_zero_at_km": 20,
+      "max_distance_km": 20
+    },
+    "all_through": {
+      "very_close_max_km": 2,
+      "close_max_km": 5,
+      "moderate_max_km": 8,
+      "proximity_zero_at_km": 20,
+      "max_distance_km": 20
+    }
+  }
+}

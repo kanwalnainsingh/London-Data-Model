@@ -979,6 +979,7 @@
       // ── Postcode search ─────────────────────────────────
 
       let _schoolsCache = null;
+      let _thresholdsCache = null;
       let _activePhase = "all";
 
       function haversineKm(lat1, lon1, lat2, lon2) {
@@ -994,13 +995,7 @@
       // ── Proximity helpers — calculated live from _dist_km, not stored values ──
       // Stored proximity_score / accessibility_band are relative to the borough
       // centroid and are meaningless once the user searches from their own postcode.
-      // Thresholds mirror configs/thresholds/accessibility.yml.
-      const _PROX_ZERO_AT = { primary: 15, secondary: 20, all_through: 20 };
-      const _BAND_THRESHOLDS = {
-        primary:     { very_close: 1,  close: 2,  moderate: 4  },
-        secondary:   { very_close: 2,  close: 5,  moderate: 8  },
-        all_through: { very_close: 2,  close: 5,  moderate: 8  },
-      };
+      // Thresholds are loaded from ./data/thresholds.json (written by the pipeline).
 
       function _phaseKey(phase) {
         if (!phase) return "primary";
@@ -1012,17 +1007,23 @@
 
       function liveProximityScore(distKm, phase) {
         if (distKm == null || !Number.isFinite(distKm)) return null;
-        const zeroAt = _PROX_ZERO_AT[_phaseKey(phase)] || 15;
+        if (!_thresholdsCache) return null;
+        const cfg = _thresholdsCache.phases[_phaseKey(phase)];
+        if (!cfg) return null;
+        const zeroAt = cfg.proximity_zero_at_km;
+        if (!zeroAt) return null;
         const bounded = Math.min(distKm, zeroAt);
         return Math.round(100 * (1 - bounded / zeroAt));
       }
 
       function liveAccessBand(distKm, phase) {
         if (distKm == null || !Number.isFinite(distKm)) return null;
-        const t = _BAND_THRESHOLDS[_phaseKey(phase)] || _BAND_THRESHOLDS.primary;
-        if (distKm <= t.very_close) return "very_close";
-        if (distKm <= t.close)      return "close";
-        if (distKm <= t.moderate)   return "moderate";
+        if (!_thresholdsCache) return null;
+        const cfg = _thresholdsCache.phases[_phaseKey(phase)];
+        if (!cfg) return null;
+        if (distKm <= cfg.very_close_max_km) return "very_close";
+        if (distKm <= cfg.close_max_km)      return "close";
+        if (distKm <= cfg.moderate_max_km)   return "moderate";
         return "far";
       }
 
@@ -1238,6 +1239,19 @@
           <div class="school-grid">${filtered.map(renderSchoolCard).join("")}</div>`;
       }
 
+      async function loadThresholds() {
+        if (_thresholdsCache) return _thresholdsCache;
+        try {
+          const r = await fetch("./data/thresholds.json");
+          if (r.ok) {
+            _thresholdsCache = await r.json();
+          }
+        } catch (_) {
+          // fetch failed — _thresholdsCache stays null; callers handle gracefully
+        }
+        return _thresholdsCache;
+      }
+
       async function loadSchools() {
         if (_schoolsCache) return _schoolsCache;
         // Prefer the full London dataset; fall back to KT19 pilot
@@ -1276,8 +1290,8 @@
           const { result } = await geo.json();
           const { latitude, longitude } = result;
 
-          // 2. Load school data (cached after first call)
-          const schools = await loadSchools();
+          // 2. Load school data and thresholds in parallel (both cached after first call)
+          const [schools] = await Promise.all([loadSchools(), loadThresholds()]);
 
           // 3. Calculate distances and sort
           const withDist = schools
