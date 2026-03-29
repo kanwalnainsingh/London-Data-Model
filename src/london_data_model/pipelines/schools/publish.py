@@ -3,6 +3,7 @@
 import csv
 import json
 import logging
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -18,6 +19,9 @@ from london_data_model.types import (
 
 
 LOGGER = logging.getLogger(__name__)
+
+_PHASE_ORDER = ("primary", "secondary", "all_through")
+_ACCESSIBILITY_BAND_ORDER = ("very_close", "close", "moderate", "far")
 
 
 def _write_csv(path: Path, validated: ValidateResult) -> None:
@@ -36,6 +40,30 @@ def _write_json(path: Path, payload: object) -> None:
 def _write_json_minified(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
+
+
+def _ordered_counts(values: list, order: tuple) -> dict:
+    counts = Counter(value for value in values if value)
+    return {key: counts[key] for key in order if counts.get(key)}
+
+
+def _build_summary_payload(validated: ValidateResult, context: PipelineContext) -> dict:
+    records = validated.records
+    return {
+        "area_id": context.area_config.area_id,
+        "school_count_total": len(records),
+        "school_count_by_phase": _ordered_counts(
+            [record.phase for record in records],
+            _PHASE_ORDER,
+        ),
+        "school_count_by_accessibility_band": _ordered_counts(
+            [record.accessibility_band for record in records],
+            _ACCESSIBILITY_BAND_ORDER,
+        ),
+        "school_count_by_quality_status": validated.quality_summary,
+        "missing_ofsted_count": sum(1 for record in records if not record.ofsted_rating_latest),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 def _build_public_status_payload(
@@ -150,15 +178,7 @@ def publish(
     _write_csv(csv_path, validated)
     _write_json(records_path, [record.to_dict() for record in validated.records])
 
-    summary_payload = {
-        "area_id": context.area_config.area_id,
-        "school_count_total": len(validated.records),
-        "school_count_by_phase": {},
-        "school_count_by_accessibility_band": {},
-        "school_count_by_quality_status": validated.quality_summary,
-        "missing_ofsted_count": 0,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-    }
+    summary_payload = _build_summary_payload(validated, context)
     _write_json(summary_path, summary_payload)
 
     finished_at = datetime.now(timezone.utc)
