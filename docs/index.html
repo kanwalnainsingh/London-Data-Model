@@ -991,6 +991,41 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       }
 
+      // ── Proximity helpers — calculated live from _dist_km, not stored values ──
+      // Stored proximity_score / accessibility_band are relative to the borough
+      // centroid and are meaningless once the user searches from their own postcode.
+      // Thresholds mirror configs/thresholds/accessibility.yml.
+      const _PROX_ZERO_AT = { primary: 15, secondary: 20, all_through: 20 };
+      const _BAND_THRESHOLDS = {
+        primary:     { very_close: 1,  close: 2,  moderate: 4  },
+        secondary:   { very_close: 2,  close: 5,  moderate: 8  },
+        all_through: { very_close: 2,  close: 5,  moderate: 8  },
+      };
+
+      function _phaseKey(phase) {
+        if (!phase) return "primary";
+        const p = phase.toLowerCase().replace(/[\s_-]/g, "_");
+        if (p.includes("secondary"))  return "secondary";
+        if (p.includes("all_through") || p.includes("all through")) return "all_through";
+        return "primary";
+      }
+
+      function liveProximityScore(distKm, phase) {
+        if (distKm == null || !Number.isFinite(distKm)) return null;
+        const zeroAt = _PROX_ZERO_AT[_phaseKey(phase)] || 15;
+        const bounded = Math.min(distKm, zeroAt);
+        return Math.round(100 * (1 - bounded / zeroAt));
+      }
+
+      function liveAccessBand(distKm, phase) {
+        if (distKm == null || !Number.isFinite(distKm)) return null;
+        const t = _BAND_THRESHOLDS[_phaseKey(phase)] || _BAND_THRESHOLDS.primary;
+        if (distKm <= t.very_close) return "very_close";
+        if (distKm <= t.close)      return "close";
+        if (distKm <= t.moderate)   return "moderate";
+        return "far";
+      }
+
       function ofstedClass(rating) {
         if (!rating) return "ofsted-unknown";
         const r = rating.toLowerCase();
@@ -1076,12 +1111,16 @@
           ? `<span class="badge badge-warn">Partial data</span>`
           : `<span class="badge badge-poor">Poor data</span>`;
 
-        // ── Accessibility band + proximity score ─────────────────────────
-        const bandHtml = s.accessibility_band
-          ? `<span class="access-band ${accessBandClass(s.accessibility_band)}">${accessBandLabel(s.accessibility_band)}</span>`
+        // ── Accessibility band + proximity score — live from search distance ──
+        // We recalculate these from _dist_km (distance from the user's postcode)
+        // because the stored values in the JSON are relative to the borough centroid.
+        const liveBand  = liveAccessBand(s._dist_km, s.phase);
+        const liveScore = liveProximityScore(s._dist_km, s.phase);
+        const bandHtml = liveBand
+          ? `<span class="access-band ${accessBandClass(liveBand)}">${accessBandLabel(liveBand)}</span>`
           : "";
-        const proxHtml = s.proximity_score != null
-          ? `<span>Proximity score: <strong>${Math.round(s.proximity_score)}/100</strong></span>`
+        const proxHtml = liveScore != null
+          ? `<span>Proximity score: <strong>${liveScore}/100</strong></span>`
           : "";
         const accessRow = (bandHtml || proxHtml)
           ? `<div class="school-access-row">${bandHtml}${proxHtml}</div>` : "";
