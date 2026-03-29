@@ -15,8 +15,14 @@ from london_data_model.pipelines.schools.publish import publish
 from london_data_model.pipelines.schools.transform import (
     OFSTED_REPORT_BASE_URL,
     _OFSTED_RATING_MAP,
+    _normalize_admissions_policy,
+    _normalize_float_field,
+    _normalize_gender,
+    _normalize_int,
     _normalize_ofsted_safeguarding,
     _normalize_ofsted_subrating,
+    _normalize_religious_character,
+    _normalize_sixth_form,
     assign_accessibility_band,
     calculate_distance_km,
     calculate_proximity_score,
@@ -142,6 +148,38 @@ def _add_fringe_schools(
             "ofsted_behaviour_attitudes": _normalize_ofsted_subrating(raw.get("ofsted_behaviour_attitudes")),
             "ofsted_sixth_form": _normalize_ofsted_subrating(raw.get("ofsted_sixth_form")),
             "ofsted_safeguarding": _normalize_ofsted_safeguarding(raw.get("ofsted_safeguarding")),
+            # Additional Ofsted fields
+            "ofsted_early_years": _normalize_ofsted_subrating(raw.get("ofsted_early_years")),
+            "ofsted_category_of_concern": (
+                str(raw["ofsted_category_of_concern"]).strip()
+                if raw.get("ofsted_category_of_concern") not in (None, "")
+                else None
+            ),
+            "ofsted_deprivation_band": (
+                str(raw["ofsted_deprivation_band"]).strip()
+                if raw.get("ofsted_deprivation_band") not in (None, "")
+                else None
+            ),
+            # GIAS — additional school characteristics
+            "school_website": (
+                str(raw["school_website"]).strip()
+                if raw.get("school_website") not in (None, "")
+                else None
+            ),
+            "telephone": (
+                str(raw["telephone"]).strip()
+                if raw.get("telephone") not in (None, "")
+                else None
+            ),
+            "number_of_pupils": _normalize_int(raw.get("number_of_pupils")),
+            "school_capacity": _normalize_int(raw.get("school_capacity")),
+            "gender": _normalize_gender(raw.get("gender")),
+            "religious_character": _normalize_religious_character(raw.get("religious_character")),
+            "admissions_policy": _normalize_admissions_policy(raw.get("admissions_policy")),
+            "has_sixth_form": _normalize_sixth_form(raw.get("has_sixth_form")),
+            "statutory_low_age": _normalize_int(raw.get("statutory_low_age")),
+            "statutory_high_age": _normalize_int(raw.get("statutory_high_age")),
+            "pct_free_school_meals": _normalize_float_field(raw.get("pct_free_school_meals")),
             "ks4_progress8": None,
             "ks4_attainment8": None,
             "ks4_strong_pass_pct": None,

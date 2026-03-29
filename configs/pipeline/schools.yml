@@ -41,6 +41,17 @@ official_input:
     is_open: "EstablishmentStatus (name)"
     easting: Easting
     northing: Northing
+    school_website: SchoolWebsite
+    telephone: TelephoneNum
+    number_of_pupils: NumberOfPupils
+    school_capacity: SchoolCapacity
+    gender: "Gender (name)"
+    religious_character: "ReligiousCharacter (name)"
+    admissions_policy: "AdmissionsPolicy (name)"
+    has_sixth_form: "OfficialSixthForm (name)"
+    statutory_low_age: StatutoryLowAge
+    statutory_high_age: StatutoryHighAge
+    pct_free_school_meals: PercentageFSM
   ofsted_column_map:
     school_urn: URN
     ofsted_rating_latest: Overall effectiveness
@@ -51,6 +62,9 @@ official_input:
     ofsted_behaviour_attitudes: Behaviour and attitudes
     ofsted_sixth_form: "Sixth form provision (where applicable)"
     ofsted_safeguarding: "Safeguarding is effective?"
+    ofsted_early_years: "Early years provision (where applicable)"
+    ofsted_category_of_concern: Category of concern
+    ofsted_deprivation_band: Deprivation band
 # ── KS4 (GCSE) performance tables ─────────────────────────────────────────────
 # Source: DfE "Find school performance data" — Key Stage 4
 #   https://www.find-school-performance-data.service.gov.uk/download-data
