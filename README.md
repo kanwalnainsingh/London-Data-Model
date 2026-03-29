@@ -173,3 +173,16 @@ If Pages is enabled for the `main` branch `docs/` folder, the public URL should 
 ```text
 https://kanwalnainsingh.github.io/London-Data-Model/
 ```
+
+## GitHub Actions
+
+The repository now has two GitHub Actions workflows:
+
+- `CI`: runs `pytest -q` on pushes and pull requests on Python `3.8` and `3.11`
+- `Refresh Public Data`: runs on a daily schedule and manual dispatch, executes the London official pipeline, and commits refreshed `docs/data/` artifacts when outputs change
+
+Current automation gap to be aware of:
+
+- the scheduled refresh can auto-fetch GIAS and Ofsted because those sources are already wired into the pipeline fetch stage
+- KS4 and KS5 inputs are still disabled by config, so the refresh workflow will not publish performance metrics until those source URLs and mappings are configured
+- GitHub Pages is currently configured in legacy `main:/docs` mode, so if you want refreshes to redeploy the site without a manual follow-up, switch Pages to GitHub Actions deployment or use a PAT-backed push instead of relying only on `GITHUB_TOKEN`

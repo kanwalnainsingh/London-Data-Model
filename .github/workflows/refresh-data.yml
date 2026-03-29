@@ -1,0 +1,52 @@
+name: Refresh Public Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "20 6 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-public-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[dev]
+
+      - name: Run test suite
+        run: pytest -q
+
+      - name: Refresh London public artifacts
+        run: python -m london_data_model.cli schools run --area london --input-mode official
+
+      - name: Commit updated docs data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data
+          if git diff --cached --quiet; then
+            echo "No published data changes detected."
+            exit 0
+          fi
+          git commit -m "Refresh published London school data"
+          git push
