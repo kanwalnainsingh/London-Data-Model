@@ -1,0 +1,133 @@
+{
+  "generated_at": "2026-03-29T13:22:04.334093+00:00",
+  "input_mode": "official",
+  "sources": [
+    {
+      "source_name": "gias_establishments",
+      "label": "Get Information About Schools (GIAS)",
+      "source_type": "gias_establishments",
+      "source_category": "administrative_register",
+      "publisher": "Department for Education (DfE)",
+      "licence": "Open Government Licence v3.0",
+      "home_url": "https://get-information-schools.service.gov.uk/",
+      "update_frequency": "Daily",
+      "coverage": "All schools and educational establishments in England",
+      "description": "The definitive national register of every school in England. Used for school names, addresses, phase, establishment type and BNG coordinates. Updated daily; date of export is embedded in the download URL.",
+      "fields_used": [
+        "URN",
+        "EstablishmentName",
+        "PhaseOfEducation (name)",
+        "TypeOfEstablishment (name)",
+        "EstablishmentStatus (name)",
+        "LA (code)",
+        "Easting",
+        "Northing",
+        "Postcode",
+        "Street",
+        "Locality",
+        "Address3",
+        "Town",
+        "County (name)"
+      ],
+      "url": "https://ea-edubase-api-prod.azurewebsites.net/edubase/downloads/public/edubasealldata20260329.csv",
+      "fetched_at": "2026-03-28T10:48:47.193228+00:00",
+      "file_path": "/Users/kanwalnainsingh/London-Data-Model/.claude/worktrees/optimistic-archimedes/data/raw/gias_establishments.csv",
+      "file_size_bytes": 64323311,
+      "file_size_mb": 61.34,
+      "source_date": "2026-03-29",
+      "academic_year": null,
+      "status": "loaded",
+      "notes": [
+        "schools: skipped (file exists)"
+      ]
+    },
+    {
+      "source_name": "ofsted_state_funded_schools",
+      "label": "Ofsted State-Funded Schools Inspection Outcomes",
+      "source_type": "ofsted_state_funded_schools",
+      "source_category": "inspection_data",
+      "publisher": "Ofsted (Office for Standards in Education, Children's Services and Skills)",
+      "licence": "Open Government Licence v3.0",
+      "home_url": "https://www.gov.uk/government/publications/five-year-ofsted-inspection-data",
+      "update_frequency": "Monthly (updated after each inspection cycle)",
+      "coverage": "All state-funded schools inspected in England (rolling 5-year window)",
+      "description": "Five-year rolling Ofsted inspection results for state-funded schools. Provides the headline grade (Outstanding/Good/Requires improvement/Inadequate) and the published inspection date for each school.",
+      "fields_used": [
+        "URN",
+        "Overall effectiveness",
+        "Published date"
+      ],
+      "url": "https://www.gov.uk/government/publications/five-year-ofsted-inspection-data",
+      "fetched_at": "2026-03-28T10:55:44.580299+00:00",
+      "file_path": "/Users/kanwalnainsingh/London-Data-Model/.claude/worktrees/optimistic-archimedes/data/raw/ofsted_state_funded_schools.csv",
+      "file_size_bytes": 30401566,
+      "file_size_mb": 28.99,
+      "source_date": null,
+      "academic_year": null,
+      "status": "loaded",
+      "notes": [
+        "ofsted: skipped (file exists)"
+      ]
+    },
+    {
+      "source_name": "ks4_performance",
+      "label": "KS4 (GCSE) School Performance Tables",
+      "source_type": "ks4_performance",
+      "source_category": "performance_statistics",
+      "publisher": "Department for Education (DfE)",
+      "licence": "Open Government Licence v3.0",
+      "home_url": "https://www.find-school-performance-data.service.gov.uk/",
+      "update_frequency": "Annual (revised data published each January for previous academic year)",
+      "coverage": "Secondary and all-through state-funded schools in England",
+      "description": "Annual school-level GCSE outcomes. Includes Progress 8 (value-added measure), Attainment 8 (average grade score across 8 GCSEs), and the percentage of pupils achieving grade 4+ (standard pass) and grade 5+ (strong pass) in English and Maths.",
+      "fields_used": [
+        "URN",
+        "P8MEA",
+        "ATT8SCR",
+        "PTL2BASICS_95",
+        "PTL2BASICS_94"
+      ],
+      "url": null,
+      "fetched_at": null,
+      "file_path": "/Users/kanwalnainsingh/London-Data-Model/.claude/worktrees/optimistic-archimedes/data/raw/ks4_performance.csv",
+      "file_size_bytes": null,
+      "file_size_mb": null,
+      "source_date": null,
+      "academic_year": null,
+      "status": "not_configured",
+      "notes": [
+        "KS4 input disabled in config (ks4_input.enabled: false)."
+      ]
+    },
+    {
+      "source_name": "ks5_performance",
+      "label": "KS5 (A-Level) School Performance Tables",
+      "source_type": "ks5_performance",
+      "source_category": "performance_statistics",
+      "publisher": "Department for Education (DfE)",
+      "licence": "Open Government Licence v3.0",
+      "home_url": "https://www.find-school-performance-data.service.gov.uk/",
+      "update_frequency": "Annual (published October/November for previous academic year)",
+      "coverage": "Schools and sixth-form colleges in England",
+      "description": "Annual school-level A-level outcomes for schools with sixth forms. Includes average point score per entry, percentage of A*/A grades, A*\u2013E pass rate, and total number of A-level students aged 16\u201318.",
+      "fields_used": [
+        "URN",
+        "A_ATT_AVG_PT_SCR",
+        "A_A_STAR_A",
+        "A_PASS",
+        "TALLPPE_ALEV_1618"
+      ],
+      "url": null,
+      "fetched_at": null,
+      "file_path": "/Users/kanwalnainsingh/London-Data-Model/.claude/worktrees/optimistic-archimedes/data/raw/ks5_performance.csv",
+      "file_size_bytes": null,
+      "file_size_mb": null,
+      "source_date": null,
+      "academic_year": null,
+      "status": "not_configured",
+      "notes": [
+        "KS5 input disabled in config (ks5_input.enabled: false)."
+      ]
+    }
+  ]
+}
