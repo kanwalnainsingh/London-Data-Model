@@ -60,6 +60,70 @@ def _normalize_ofsted_safeguarding(value: Any) -> Optional[str]:
     return None
 
 
+def _normalize_int(value: Any) -> Optional[int]:
+    """Convert a value to int, returning None for empty/non-numeric."""
+    if value in (None, ""):
+        return None
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def _normalize_float_field(value: Any) -> Optional[float]:
+    """Convert a value to float, returning None for empty/non-numeric."""
+    if value in (None, ""):
+        return None
+    try:
+        return float(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def _normalize_sixth_form(value: Any) -> Optional[bool]:
+    """Normalise GIAS OfficialSixthForm field to bool."""
+    if value is None:
+        return None
+    text = str(value).strip().lower()
+    if text == "has sixth form":
+        return True
+    if text == "does not have sixth form":
+        return False
+    if text in ("", "not applicable"):
+        return None
+    return None
+
+
+def _normalize_gender(value: Any) -> Optional[str]:
+    """Return gender string, or None if not applicable/empty."""
+    if value is None:
+        return None
+    text = str(value).strip()
+    if text.lower() in ("", "not applicable"):
+        return None
+    return text
+
+
+def _normalize_religious_character(value: Any) -> Optional[str]:
+    """Return religious character string, or None if None/Does not apply/empty."""
+    if value is None:
+        return None
+    text = str(value).strip()
+    if text.lower() in ("", "none", "does not apply"):
+        return None
+    return text
+
+
+def _normalize_admissions_policy(value: Any) -> Optional[str]:
+    """Return admissions policy string, or None if not applicable/empty."""
+    if value is None:
+        return None
+    text = str(value).strip()
+    if text.lower() in ("", "not applicable"):
+        return None
+    return text
+
+
 def _normalize_dfe_number(value: Any) -> Optional[float]:
     """Convert a DfE performance table value to float, returning None for suppressed entries."""
     if value is None:
@@ -272,6 +336,38 @@ def build_school_record(raw_record: Dict[str, Any], context: PipelineContext) ->
         ofsted_behaviour_attitudes=_normalize_ofsted_subrating(raw_record.get("ofsted_behaviour_attitudes")),
         ofsted_sixth_form=_normalize_ofsted_subrating(raw_record.get("ofsted_sixth_form")),
         ofsted_safeguarding=_normalize_ofsted_safeguarding(raw_record.get("ofsted_safeguarding")),
+        # Additional Ofsted fields
+        ofsted_early_years=_normalize_ofsted_subrating(raw_record.get("ofsted_early_years")),
+        ofsted_category_of_concern=(
+            str(raw_record["ofsted_category_of_concern"]).strip()
+            if raw_record.get("ofsted_category_of_concern") not in (None, "")
+            else None
+        ),
+        ofsted_deprivation_band=(
+            str(raw_record["ofsted_deprivation_band"]).strip()
+            if raw_record.get("ofsted_deprivation_band") not in (None, "")
+            else None
+        ),
+        # GIAS — additional school characteristics
+        school_website=(
+            str(raw_record["school_website"]).strip()
+            if raw_record.get("school_website") not in (None, "")
+            else None
+        ),
+        telephone=(
+            str(raw_record["telephone"]).strip()
+            if raw_record.get("telephone") not in (None, "")
+            else None
+        ),
+        number_of_pupils=_normalize_int(raw_record.get("number_of_pupils")),
+        school_capacity=_normalize_int(raw_record.get("school_capacity")),
+        gender=_normalize_gender(raw_record.get("gender")),
+        religious_character=_normalize_religious_character(raw_record.get("religious_character")),
+        admissions_policy=_normalize_admissions_policy(raw_record.get("admissions_policy")),
+        has_sixth_form=_normalize_sixth_form(raw_record.get("has_sixth_form")),
+        statutory_low_age=_normalize_int(raw_record.get("statutory_low_age")),
+        statutory_high_age=_normalize_int(raw_record.get("statutory_high_age")),
+        pct_free_school_meals=_normalize_float_field(raw_record.get("pct_free_school_meals")),
         # KS4 (GCSE) — present only when ks4_input is enabled and URN matched
         ks4_progress8=_normalize_dfe_number(raw_record.get("ks4_progress8")),
         ks4_attainment8=_normalize_dfe_number(raw_record.get("ks4_attainment8")),

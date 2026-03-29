@@ -3,6 +3,7 @@
 import csv
 import json
 import logging
+from datetime import datetime as _dt
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -233,14 +234,38 @@ def _map_record(raw_record: Dict[str, Any], column_map: Dict[str, str]) -> Dict[
     return mapped
 
 
+def _parse_inspection_date(date_str: Any) -> Optional[_dt]:
+    """Parse an Ofsted inspection date string (DD/MM/YYYY) into a datetime."""
+    if not date_str:
+        return None
+    try:
+        return _dt.strptime(str(date_str).strip(), "%d/%m/%Y")
+    except ValueError:
+        return None
+
+
 def _merge_records(
     school_records: List[Dict[str, Any]],
     ofsted_records: List[Dict[str, Any]],
     merge_key: str,
 ) -> List[Dict[str, Any]]:
-    ofsted_by_key = {
-        record.get(merge_key): record for record in ofsted_records if record.get(merge_key) not in (None, "")
-    }
+    # Build ofsted_by_key keeping the row with the most recent inspection date per URN.
+    # The CSV is ordered newest-first within each school's block; a naive dict comprehension
+    # would keep the last (oldest) row per school.  We compare dates explicitly instead.
+    ofsted_by_key: Dict[str, Dict[str, Any]] = {}
+    for record in ofsted_records:
+        key = record.get(merge_key)
+        if key in (None, ""):
+            continue
+        existing = ofsted_by_key.get(key)
+        if existing is None:
+            ofsted_by_key[key] = record
+        else:
+            existing_date = _parse_inspection_date(existing.get("ofsted_inspection_date_latest"))
+            new_date = _parse_inspection_date(record.get("ofsted_inspection_date_latest"))
+            if new_date is not None and (existing_date is None or new_date > existing_date):
+                ofsted_by_key[key] = record
+
     merged: List[Dict[str, Any]] = []
     for school_record in school_records:
         school_key = school_record.get(merge_key)

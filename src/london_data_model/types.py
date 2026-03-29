@@ -29,6 +29,22 @@ SCHOOL_OUTPUT_FIELDS = [
     "ofsted_behaviour_attitudes",
     "ofsted_sixth_form",
     "ofsted_safeguarding",
+    # Additional Ofsted fields
+    "ofsted_early_years",
+    "ofsted_category_of_concern",
+    "ofsted_deprivation_band",
+    # GIAS — additional school characteristics
+    "school_website",
+    "telephone",
+    "number_of_pupils",
+    "school_capacity",
+    "gender",
+    "religious_character",
+    "admissions_policy",
+    "has_sixth_form",
+    "statutory_low_age",
+    "statutory_high_age",
+    "pct_free_school_meals",
     # KS4 (GCSE) — secondary and all-through schools
     "ks4_progress8",
     "ks4_attainment8",
@@ -132,6 +148,22 @@ class SchoolRecord:
     ofsted_behaviour_attitudes: Optional[str] = None
     ofsted_sixth_form: Optional[str] = None        # only for schools with a sixth form
     ofsted_safeguarding: Optional[str] = None      # "Yes" or "No"
+    # Additional Ofsted fields
+    ofsted_early_years: Optional[str] = None       # sub-rating for early years (primary)
+    ofsted_category_of_concern: Optional[str] = None  # e.g. "Special Measures"
+    ofsted_deprivation_band: Optional[str] = None
+    # GIAS — additional school characteristics
+    school_website: Optional[str] = None
+    telephone: Optional[str] = None
+    number_of_pupils: Optional[int] = None
+    school_capacity: Optional[int] = None
+    gender: Optional[str] = None               # Mixed / Boys / Girls
+    religious_character: Optional[str] = None
+    admissions_policy: Optional[str] = None
+    has_sixth_form: Optional[bool] = None      # from GIAS OfficialSixthForm field
+    statutory_low_age: Optional[int] = None
+    statutory_high_age: Optional[int] = None
+    pct_free_school_meals: Optional[float] = None
     # KS4 (GCSE) results — populated for secondary and all-through schools
     ks4_progress8: Optional[float] = None           # Progress 8 score (-4 to +4 range)
     ks4_attainment8: Optional[float] = None         # Attainment 8 score (0–90 range)

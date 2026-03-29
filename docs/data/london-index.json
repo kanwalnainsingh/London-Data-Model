@@ -1,12 +1,12 @@
 {
   "region_id": "london",
-  "generated_at": "2026-03-29T14:07:01.911129+00:00",
+  "generated_at": "2026-03-29T14:15:36.110550+00:00",
   "input_mode": "official",
   "borough_count": 33,
   "school_count_total": 2254,
   "quality_counts": {
-    "complete": 2178,
-    "partial": 76,
+    "complete": 2212,
+    "partial": 42,
     "poor": 0
   },
   "areas": [
@@ -30,8 +30,8 @@
       "la_code": 302,
       "school_count": 119,
       "quality_counts": {
-        "complete": 112,
-        "partial": 7,
+        "complete": 116,
+        "partial": 3,
         "poor": 0
       },
       "status_url": "./data/barnet-status.json"
@@ -43,8 +43,8 @@
       "la_code": 303,
       "school_count": 76,
       "quality_counts": {
-        "complete": 73,
-        "partial": 3,
+        "complete": 75,
+        "partial": 1,
         "poor": 0
       },
       "status_url": "./data/bexley-status.json"
@@ -56,8 +56,8 @@
       "la_code": 304,
       "school_count": 76,
       "quality_counts": {
-        "complete": 75,
-        "partial": 1,
+        "complete": 76,
+        "partial": 0,
         "poor": 0
       },
       "status_url": "./data/brent-status.json"
@@ -69,8 +69,8 @@
       "la_code": 305,
       "school_count": 95,
       "quality_counts": {
-        "complete": 92,
-        "partial": 3,
+        "complete": 94,
+        "partial": 1,
         "poor": 0
       },
       "status_url": "./data/bromley-status.json"
@@ -108,8 +108,8 @@
       "la_code": 306,
       "school_count": 110,
       "quality_counts": {
-        "complete": 105,
-        "partial": 5,
+        "complete": 107,
+        "partial": 3,
         "poor": 0
       },
       "status_url": "./data/croydon-status.json"
@@ -121,8 +121,8 @@
       "la_code": 307,
       "school_count": 82,
       "quality_counts": {
-        "complete": 80,
-        "partial": 2,
+        "complete": 82,
+        "partial": 0,
         "poor": 0
       },
       "status_url": "./data/ealing-status.json"
@@ -134,8 +134,8 @@
       "la_code": 308,
       "school_count": 89,
       "quality_counts": {
-        "complete": 84,
-        "partial": 5,
+        "complete": 86,
+        "partial": 3,
         "poor": 0
       },
       "status_url": "./data/enfield-status.json"
@@ -147,8 +147,8 @@
       "la_code": 203,
       "school_count": 78,
       "quality_counts": {
-        "complete": 74,
-        "partial": 4,
+        "complete": 76,
+        "partial": 2,
         "poor": 0
       },
       "status_url": "./data/greenwich-status.json"
@@ -199,8 +199,8 @@
       "la_code": 310,
       "school_count": 53,
       "quality_counts": {
-        "complete": 52,
-        "partial": 1,
+        "complete": 53,
+        "partial": 0,
         "poor": 0
       },
       "status_url": "./data/harrow-status.json"
@@ -238,8 +238,8 @@
       "la_code": 313,
       "school_count": 70,
       "quality_counts": {
-        "complete": 64,
-        "partial": 6,
+        "complete": 68,
+        "partial": 2,
         "poor": 0
       },
       "status_url": "./data/hounslow-status.json"
@@ -290,8 +290,8 @@
       "la_code": 208,
       "school_count": 74,
       "quality_counts": {
-        "complete": 72,
-        "partial": 2,
+        "complete": 73,
+        "partial": 1,
         "poor": 0
       },
       "status_url": "./data/lambeth-status.json"
@@ -303,8 +303,8 @@
       "la_code": 209,
       "school_count": 78,
       "quality_counts": {
-        "complete": 76,
-        "partial": 2,
+        "complete": 78,
+        "partial": 0,
         "poor": 0
       },
       "status_url": "./data/lewisham-status.json"
@@ -316,8 +316,8 @@
       "la_code": 315,
       "school_count": 52,
       "quality_counts": {
-        "complete": 49,
-        "partial": 3,
+        "complete": 50,
+        "partial": 2,
         "poor": 0
       },
       "status_url": "./data/merton-status.json"
@@ -329,8 +329,8 @@
       "la_code": 316,
       "school_count": 88,
       "quality_counts": {
-        "complete": 84,
-        "partial": 4,
+        "complete": 87,
+        "partial": 1,
         "poor": 0
       },
       "status_url": "./data/newham-status.json"
@@ -342,8 +342,8 @@
       "la_code": 317,
       "school_count": 71,
       "quality_counts": {
-        "complete": 70,
-        "partial": 1,
+        "complete": 71,
+        "partial": 0,
         "poor": 0
       },
       "status_url": "./data/redbridge-status.json"
@@ -368,8 +368,8 @@
       "la_code": 210,
       "school_count": 86,
       "quality_counts": {
-        "complete": 82,
-        "partial": 4,
+        "complete": 84,
+        "partial": 2,
         "poor": 0
       },
       "status_url": "./data/southwark-status.json"
@@ -381,8 +381,8 @@
       "la_code": 319,
       "school_count": 56,
       "quality_counts": {
-        "complete": 50,
-        "partial": 6,
+        "complete": 51,
+        "partial": 5,
         "poor": 0
       },
       "status_url": "./data/sutton-status.json"
@@ -420,8 +420,8 @@
       "la_code": 212,
       "school_count": 69,
       "quality_counts": {
-        "complete": 67,
-        "partial": 2,
+        "complete": 68,
+        "partial": 1,
         "poor": 0
       },
       "status_url": "./data/wandsworth-status.json"

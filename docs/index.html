@@ -655,6 +655,34 @@
       .src-status-missing  { color: #7f1d1d; font-weight: 700; }
       .src-status-not_configured { color: var(--muted); font-style: italic; }
 
+      /* ── School info grid ─────────────────────────────── */
+      .school-info-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 4px 12px;
+        font-size: 12px;
+        margin-top: 4px;
+      }
+      .info-label {
+        color: var(--muted);
+        white-space: nowrap;
+        font-weight: 500;
+      }
+      .info-value {
+        color: var(--ink);
+      }
+      .info-value a { color: var(--accent); text-decoration: none; }
+      .info-value a:hover { text-decoration: underline; }
+      .concern-banner {
+        background: #fee2e2;
+        color: #7f1d1d;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
       @media (max-width: 640px) {
         .two-col { grid-template-columns: 1fr; }
         .borough-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
@@ -1126,12 +1154,56 @@
         const accessRow = (bandHtml || proxHtml)
           ? `<div class="school-access-row">${bandHtml}${proxHtml}</div>` : "";
 
+        // ── Concern banner ───────────────────────────────────────────────
+        const concernHtml = s.ofsted_category_of_concern
+          ? `<div class="concern-banner">&#9888; Special concern: ${s.ofsted_category_of_concern}</div>`
+          : "";
+
+        // ── Info grid ────────────────────────────────────────────────────
+        function infoRow(label, value) {
+          if (value == null || value === "") return "";
+          return `<span class="info-label">${label}</span><span class="info-value">${value}</span>`;
+        }
+        const ageRange = (s.statutory_low_age != null && s.statutory_high_age != null)
+          ? `${s.statutory_low_age}–${s.statutory_high_age} years` : null;
+        const pupilsVal = s.number_of_pupils != null
+          ? (s.school_capacity != null
+              ? `${s.number_of_pupils} / ${s.school_capacity} capacity`
+              : String(s.number_of_pupils))
+          : null;
+        const sixthFormVal = s.has_sixth_form != null
+          ? (s.has_sixth_form ? "Yes" : "No")
+          : (s.ofsted_sixth_form ? "Yes" : null);
+        const fsmVal = s.pct_free_school_meals != null
+          ? `${Number(s.pct_free_school_meals).toFixed(1)}%` : null;
+        const websiteVal = s.school_website
+          ? `<a href="${s.school_website}" target="_blank" rel="noopener">${s.school_website.length > 30 ? s.school_website.slice(0, 30) + "…" : s.school_website}</a>`
+          : null;
+        const telVal = s.telephone
+          ? `<a href="tel:${s.telephone}">${s.telephone}</a>` : null;
+        const infoRows = [
+          infoRow("Age range",         ageRange),
+          infoRow("Pupils",            pupilsVal),
+          infoRow("Gender",            s.gender),
+          infoRow("Admissions",        s.admissions_policy),
+          infoRow("Religious character", s.religious_character),
+          infoRow("Sixth form",        sixthFormVal),
+          infoRow("Free school meals", fsmVal),
+          infoRow("Deprivation band",  s.ofsted_deprivation_band),
+          infoRow("Telephone",         telVal),
+          infoRow("Website",           websiteVal),
+        ].join("");
+        const infoGridHtml = infoRows.trim()
+          ? `<div class="school-info-grid">${infoRows}</div>` : "";
+
         // ── Ofsted sub-ratings panel ─────────────────────────────────────
+        const isPrimary = (s.phase || "").toLowerCase().includes("primary");
         const subRatings = [
           renderSubRating("Quality of education",    s.ofsted_quality_of_education),
           renderSubRating("Leadership & management", s.ofsted_leadership_management),
           renderSubRating("Personal development",    s.ofsted_personal_development),
           renderSubRating("Behaviour & attitudes",   s.ofsted_behaviour_attitudes),
+          isPrimary ? renderSubRating("Early years", s.ofsted_early_years) : "",
           renderSubRating("Sixth form",              s.ofsted_sixth_form),
           renderSubRating("Safeguarding effective",  s.ofsted_safeguarding),
         ].join("");
@@ -1191,6 +1263,7 @@
           : "";
 
         return `<div class="school-card">
+          ${concernHtml}
           <div class="school-card-header">
             <div class="school-name">${s.school_name}</div>
             ${dist ? `<div class="dist-badge">${dist}</div>` : ""}
@@ -1202,6 +1275,7 @@
           </div>
           <div class="school-address">${s.address || ""}${s.postcode ? ", " + s.postcode : ""}</div>
           ${accessRow}
+          ${infoGridHtml}
           <div class="school-detail-row">
             ${s.establishment_type ? `<span>${s.establishment_type}</span>` : ""}
             ${inspDate ? `<span>${inspDate}</span>` : ""}
