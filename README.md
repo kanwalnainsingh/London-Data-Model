@@ -179,10 +179,11 @@ https://kanwalnainsingh.github.io/London-Data-Model/
 The repository now has two GitHub Actions workflows:
 
 - `CI`: runs `pytest -q` on pushes and pull requests on Python `3.8` and `3.11`
-- `Refresh Public Data`: runs on a daily schedule and manual dispatch, executes the London official pipeline, and commits refreshed `docs/data/` artifacts when outputs change
+- `Deploy Pages`: publishes the `docs/` site to GitHub Pages from GitHub Actions
+- `Refresh Public Data`: runs on a daily schedule and manual dispatch, executes the London official pipeline, commits refreshed `docs/data/` artifacts when outputs change, and deploys the updated site in the same workflow
 
 Current automation gap to be aware of:
 
 - the scheduled refresh can auto-fetch GIAS and Ofsted because those sources are already wired into the pipeline fetch stage
 - KS4 and KS5 inputs are still disabled by config, so the refresh workflow will not publish performance metrics until those source URLs and mappings are configured
-- GitHub Pages is currently configured in legacy `main:/docs` mode, so if you want refreshes to redeploy the site without a manual follow-up, switch Pages to GitHub Actions deployment or use a PAT-backed push instead of relying only on `GITHUB_TOKEN`
+- GitHub Pages must be configured with `build_type: workflow` in repository settings or via the Pages API for the deploy workflows to be authoritative
