@@ -12,7 +12,16 @@ from london_data_model.pipelines.schools.extract import (
     load_official_records,
 )
 from london_data_model.pipelines.schools.publish import publish
-from london_data_model.pipelines.schools.transform import transform
+from london_data_model.pipelines.schools.transform import (
+    _OFSTED_RATING_MAP,
+    assign_accessibility_band,
+    calculate_distance_km,
+    calculate_proximity_score,
+    is_mainstream_establishment,
+    normalize_open_status,
+    normalize_phase,
+    transform,
+)
 from london_data_model.pipelines.schools.validate import validate
 from london_data_model.pipelines.schools.pipeline import (
     _build_pipeline_config,
@@ -36,10 +45,102 @@ from london_data_model.utils.config import (
 
 LOGGER = logging.getLogger(__name__)
 
+# LA codes for counties adjacent to Greater London whose schools may be
+# closer to a user's postcode than their own borough's schools.
+FRINGE_LA_CODES: set = {"936", "919", "886", "881", "867"}  # Surrey, Herts, Kent, Essex, Berkshire
+
+# Approximate centroid of Greater London. Fringe schools within FRINGE_MAX_KM
+# of this point are added to london-schools.json after the 33 borough runs.
+# The outer London boundary is ~15-24 km from this point; 30 km captures a
+# meaningful fringe zone (5-15 km into Surrey / Kent / Essex / Hertfordshire).
+GREATER_LONDON_LAT = 51.5074
+GREATER_LONDON_LON = -0.1278
+FRINGE_MAX_KM = 30.0
+
+
+def _add_fringe_schools(
+    all_records: List[Dict[str, Any]],
+    schools_by_urn: Dict[str, Any],
+    threshold_config: Dict[str, Any],
+) -> int:
+    """Capture open mainstream schools in counties adjacent to Greater London.
+
+    After the 33 borough LA-code runs there are valid schools in Surrey,
+    Hertfordshire, Kent, Essex and Berkshire that sit within a few km of the
+    outer London boundary.  This function adds those schools to the combined
+    london-schools.json so that users who live near the boundary see them in
+    postcode searches.
+
+    Returns the number of fringe schools added.
+    """
+    added = 0
+    for raw in all_records:
+        la = str(raw.get("la_code", "")).strip()
+        if la not in FRINGE_LA_CODES:
+            continue
+        urn = str(raw.get("school_urn", ""))
+        if urn in schools_by_urn:
+            continue  # already captured in a borough run
+
+        lat = raw.get("latitude")
+        lon = raw.get("longitude")
+        try:
+            lat_f = float(lat)
+            lon_f = float(lon)
+        except (TypeError, ValueError):
+            continue
+
+        dist = calculate_distance_km(GREATER_LONDON_LAT, GREATER_LONDON_LON, lat_f, lon_f)
+        if dist is None or dist > FRINGE_MAX_KM:
+            continue
+
+        phase = normalize_phase(raw.get("phase"))
+        if phase not in ("primary", "secondary", "all_through"):
+            continue
+        if normalize_open_status(raw.get("is_open")) is not True:
+            continue
+        if not is_mainstream_establishment(str(raw.get("establishment_type", ""))):
+            continue
+
+        raw_rating = str(raw.get("ofsted_rating_latest") or "").strip()
+        ofsted_rating = _OFSTED_RATING_MAP.get(raw_rating, raw.get("ofsted_rating_latest"))
+        ofsted_date = raw.get("ofsted_inspection_date_latest")
+
+        flags = []
+        if not ofsted_rating:
+            flags.append("missing_ofsted_rating")
+        if not ofsted_date:
+            flags.append("missing_inspection_date")
+
+        schools_by_urn[urn] = {
+            "school_name": str(raw.get("school_name", "")),
+            "school_urn": urn,
+            "address": str(raw.get("address", "")),
+            "postcode": raw.get("postcode"),
+            "latitude": lat_f,
+            "longitude": lon_f,
+            "phase": phase,
+            "establishment_type": str(raw.get("establishment_type", "")),
+            "is_open": True,
+            "distance_km": dist,
+            "accessibility_band": assign_accessibility_band(phase, dist, threshold_config),
+            "proximity_score": calculate_proximity_score(phase, dist, threshold_config),
+            "ofsted_rating_latest": ofsted_rating,
+            "ofsted_inspection_date_latest": ofsted_date,
+            "ofsted_report_url": raw.get("ofsted_report_url"),
+            "data_quality_status": "complete" if not flags else "partial",
+            "data_quality_flags": flags,
+        }
+        added += 1
+
+    return added
+
 
 def _publish_london_index(
     borough_results: List[Tuple[AreaConfig, PublishResult, ValidateResult]],
     pipeline_config: Dict[str, Any],
+    all_records: Optional[List[Dict[str, Any]]] = None,
+    threshold_config: Optional[Dict[str, Any]] = None,
 ) -> None:
     """Write London-wide index and combined schools JSON to docs/data/."""
     areas = []
@@ -74,6 +175,11 @@ def _publish_london_index(
                 new_dist = d.get("distance_km") or float("inf")
                 if new_dist < existing_dist:
                     schools_by_urn[urn] = d
+
+    # Level 2: add schools from fringe counties adjacent to Greater London
+    if all_records and threshold_config:
+        fringe_added = _add_fringe_schools(all_records, schools_by_urn, threshold_config)
+        LOGGER.info("Added %d fringe schools from adjacent counties (Surrey/Herts/Kent/Essex/Berkshire)", fringe_added)
 
     DOCS_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -192,7 +298,12 @@ def run_london(
         borough_results.append((borough_config, published, validated))
         total_schools += published.record_count
 
-    _publish_london_index(borough_results, pipeline_config)
+    _publish_london_index(
+        borough_results,
+        pipeline_config,
+        all_records=all_records if input_mode_effective == "official" else None,
+        threshold_config=threshold_config,
+    )
 
     LOGGER.info(
         "London multi-borough run complete: %d boroughs, %d total schools",

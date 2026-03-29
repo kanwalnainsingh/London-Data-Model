@@ -219,30 +219,31 @@ class DistanceThresholdTestCase(unittest.TestCase):
     OFSTED_ROWS: List[Dict] = []
 
     # KT19 search point: 51.349, -0.268
+    # Thresholds: primary max 15 km, secondary max 20 km
     GIAS_ROWS = [
-        # Primary within 6 km (at 0.0 km — right at search point)
+        # Primary within 15 km (at 0.0 km — right at search point)
         {"URN": "D001", "EstablishmentName": "Close Primary",
          "Street": "1 A", "Town": "Epsom", "Postcode": "KT19 0AA",
          "PhaseOfEducation": "Primary", "TypeOfEstablishment": "Community school",
          "EstablishmentStatus": "Open", "Latitude": "51.349", "Longitude": "-0.268",
          "LA (code)": "319"},
-        # Primary just beyond 6 km (at ~6.1 km north)
-        {"URN": "D002", "EstablishmentName": "Far Primary",
+        # Primary just beyond 15 km (at ~15.5 km north, delta_lat ≈ +0.140)
+        {"URN": "D002", "EstablishmentName": "Too Far Primary",
          "Street": "2 B", "Town": "Somewhere", "Postcode": "KT1 9ZZ",
          "PhaseOfEducation": "Primary", "TypeOfEstablishment": "Community school",
-         "EstablishmentStatus": "Open", "Latitude": "51.404", "Longitude": "-0.268",
+         "EstablishmentStatus": "Open", "Latitude": "51.489", "Longitude": "-0.268",
          "LA (code)": "319"},
-        # Secondary within 10 km (at ~7 km)
+        # Secondary within 20 km (at ~16 km north)
         {"URN": "D003", "EstablishmentName": "Distant Secondary",
          "Street": "3 C", "Town": "Kingston", "Postcode": "KT2 9ZZ",
          "PhaseOfEducation": "Secondary", "TypeOfEstablishment": "Academy converter",
-         "EstablishmentStatus": "Open", "Latitude": "51.412", "Longitude": "-0.268",
+         "EstablishmentStatus": "Open", "Latitude": "51.493", "Longitude": "-0.268",
          "LA (code)": "314"},
-        # Secondary beyond 10 km (at ~12 km north)
+        # Secondary just beyond 20 km (at ~20.5 km north, delta_lat ≈ +0.185)
         {"URN": "D004", "EstablishmentName": "Very Far Secondary",
          "Street": "4 D", "Town": "London", "Postcode": "W1A 1AA",
          "PhaseOfEducation": "Secondary", "TypeOfEstablishment": "Community school",
-         "EstablishmentStatus": "Open", "Latitude": "51.457", "Longitude": "-0.268",
+         "EstablishmentStatus": "Open", "Latitude": "51.534", "Longitude": "-0.268",
          "LA (code)": "202"},
     ]
 
