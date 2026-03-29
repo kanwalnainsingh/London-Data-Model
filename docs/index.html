@@ -502,6 +502,86 @@
       .result-stat.p8-positive strong { color: #065f46; }
       .result-stat.p8-negative strong { color: #7f1d1d; }
 
+      /* ── Ofsted sub-ratings table inside card ─────────── */
+      .ofsted-details {
+        background: #f4f7fb;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-top: 2px;
+      }
+
+      .ofsted-details-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+
+      .ofsted-sub-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 12px;
+      }
+
+      .ofsted-sub-item {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .ofsted-sub-item .sub-label {
+        font-size: 10px;
+        color: var(--muted);
+        line-height: 1.2;
+      }
+
+      .ofsted-sub-item .sub-val {
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+
+      .sub-outstanding { color: #0f4e47; }
+      .sub-good        { color: #065f46; }
+      .sub-requires    { color: #92400e; }
+      .sub-inadequate  { color: #7f1d1d; }
+      .sub-yes         { color: #065f46; }
+      .sub-no          { color: #7f1d1d; }
+
+      /* ── Accessibility / proximity row ───────────────── */
+      .school-access-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 1px;
+      }
+
+      .access-band {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 9px;
+        border-radius: 999px;
+        text-transform: capitalize;
+      }
+
+      .band-very-close { background: #d6f3ef; color: #0f4e47; }
+      .band-close      { background: #d1fae5; color: #065f46; }
+      .band-moderate   { background: #fef3c7; color: #92400e; }
+      .band-far        { background: #fee2e2; color: #7f1d1d; }
+
+      .ofsted-report-link {
+        font-size: 12px;
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .ofsted-report-link:hover { text-decoration: underline; }
+
       /* ── Data sources table ───────────────────────────── */
       .sources-tbl {
         width: 100%;
@@ -954,6 +1034,37 @@
         </div>`;
       }
 
+      function subRatingClass(val) {
+        if (!val) return "";
+        const v = val.toLowerCase();
+        if (v.includes("outstanding")) return "sub-outstanding";
+        if (v.includes("good"))        return "sub-good";
+        if (v.includes("requires"))    return "sub-requires";
+        if (v.includes("inadequate"))  return "sub-inadequate";
+        if (v === "yes")               return "sub-yes";
+        if (v === "no")                return "sub-no";
+        return "";
+      }
+
+      function renderSubRating(label, val) {
+        if (!val) return "";
+        return `<div class="ofsted-sub-item">
+          <span class="sub-label">${label}</span>
+          <span class="sub-val ${subRatingClass(val)}">${val}</span>
+        </div>`;
+      }
+
+      function accessBandClass(band) {
+        if (!band) return "";
+        const b = band.toLowerCase().replace(/_/g, "-");
+        return "band-" + b;
+      }
+
+      function accessBandLabel(band) {
+        if (!band) return "";
+        return band.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      }
+
       function renderSchoolCard(s) {
         const dist = typeof s._dist_km === "number" ? s._dist_km.toFixed(1) + " km" : "";
         const ofstedLabel = s.ofsted_rating_latest || "No rating";
@@ -965,34 +1076,79 @@
           ? `<span class="badge badge-warn">Partial data</span>`
           : `<span class="badge badge-poor">Poor data</span>`;
 
+        // ── Accessibility band + proximity score ─────────────────────────
+        const bandHtml = s.accessibility_band
+          ? `<span class="access-band ${accessBandClass(s.accessibility_band)}">${accessBandLabel(s.accessibility_band)}</span>`
+          : "";
+        const proxHtml = s.proximity_score != null
+          ? `<span>Proximity score: <strong>${Math.round(s.proximity_score)}/100</strong></span>`
+          : "";
+        const accessRow = (bandHtml || proxHtml)
+          ? `<div class="school-access-row">${bandHtml}${proxHtml}</div>` : "";
+
+        // ── Ofsted sub-ratings panel ─────────────────────────────────────
+        const subRatings = [
+          renderSubRating("Quality of education",    s.ofsted_quality_of_education),
+          renderSubRating("Leadership & management", s.ofsted_leadership_management),
+          renderSubRating("Personal development",    s.ofsted_personal_development),
+          renderSubRating("Behaviour & attitudes",   s.ofsted_behaviour_attitudes),
+          renderSubRating("Sixth form",              s.ofsted_sixth_form),
+          renderSubRating("Safeguarding effective",  s.ofsted_safeguarding),
+        ].join("");
+        const ofstedDetailsHtml = subRatings.trim()
+          ? `<div class="ofsted-details">
+               <div class="ofsted-details-label">Ofsted Inspection Detail</div>
+               <div class="ofsted-sub-grid">${subRatings}</div>
+             </div>` : "";
+
+        // ── Ofsted report link ───────────────────────────────────────────
+        const reportLinkHtml = s.ofsted_report_url
+          ? `<a class="ofsted-report-link" href="${s.ofsted_report_url}" target="_blank" rel="noopener">View Ofsted report ↗</a>`
+          : "";
+
         // ── KS4 (GCSE) results panel ─────────────────────────────────────
+        const isSecondary = (s.phase || "").toLowerCase().includes("secondary")
+          || (s.phase || "").toLowerCase().includes("through");
         const p8Val   = fmtP8(s.ks4_progress8);
         const p8Class = s.ks4_progress8 != null
           ? (Number(s.ks4_progress8) >= 0 ? "p8-positive" : "p8-negative") : "";
         const ks4Stats = [
-          renderResultsStat(p8Val,                         "Progress 8",            p8Class),
-          renderResultsStat(fmtNum(s.ks4_attainment8),    "Attainment 8",          ""),
-          renderResultsStat(fmtPct(s.ks4_strong_pass_pct), "Grade 5+ Eng & Maths", ""),
-          renderResultsStat(fmtPct(s.ks4_standard_pass_pct), "Grade 4+ Eng & Maths", ""),
+          renderResultsStat(p8Val,                              "Progress 8",            p8Class),
+          renderResultsStat(fmtNum(s.ks4_attainment8),         "Attainment 8",          ""),
+          renderResultsStat(fmtPct(s.ks4_strong_pass_pct),     "Grade 5+ Eng & Maths",  ""),
+          renderResultsStat(fmtPct(s.ks4_standard_pass_pct),   "Grade 4+ Eng & Maths",  ""),
         ].join("");
         const ks4Html = ks4Stats.trim()
           ? `<div class="results-section">
                <div class="results-label">GCSE Results</div>
                <div class="results-grid">${ks4Stats}</div>
-             </div>` : "";
+             </div>`
+          : isSecondary
+          ? `<div class="results-section">
+               <div class="results-label">GCSE Results</div>
+               <p style="font-size:12px;color:var(--muted);margin:0;">Performance data not yet loaded — enable ks4_input in pipeline config.</p>
+             </div>`
+          : "";
 
         // ── KS5 (A-level) results panel ──────────────────────────────────
+        const hasSixthForm = !!s.ofsted_sixth_form;
         const ks5Stats = [
-          renderResultsStat(fmtNum(s.ks5_avg_point_score, 1), "Avg A-level pts / entry", ""),
-          renderResultsStat(fmtPct(s.ks5_a_star_a_pct),       "A*/A grade",              ""),
-          renderResultsStat(fmtPct(s.ks5_pass_rate_pct),      "A*–E pass rate",          ""),
+          renderResultsStat(fmtNum(s.ks5_avg_point_score, 1), "Avg pts / A-level entry", ""),
+          renderResultsStat(fmtPct(s.ks5_a_star_a_pct),       "A*/A grade",               ""),
+          renderResultsStat(fmtPct(s.ks5_pass_rate_pct),      "A*–E pass rate",            ""),
           renderResultsStat(s.ks5_entries != null ? String(s.ks5_entries) : null, "A-level students", ""),
         ].join("");
         const ks5Html = ks5Stats.trim()
           ? `<div class="results-section">
                <div class="results-label">A-Level Results</div>
                <div class="results-grid">${ks5Stats}</div>
-             </div>` : "";
+             </div>`
+          : hasSixthForm
+          ? `<div class="results-section">
+               <div class="results-label">A-Level Results</div>
+               <p style="font-size:12px;color:var(--muted);margin:0;">Performance data not yet loaded — enable ks5_input in pipeline config.</p>
+             </div>`
+          : "";
 
         return `<div class="school-card">
           <div class="school-card-header">
@@ -1000,16 +1156,19 @@
             ${dist ? `<div class="dist-badge">${dist}</div>` : ""}
           </div>
           <div class="school-meta">
-            <span class="phase-tag ${phaseClass(s.phase)}">${s.phase || "unknown"}</span>
+            <span class="phase-tag ${phaseClass(s.phase)}">${s.phase ? s.phase.replace(/_/g," ") : "unknown"}</span>
             <span class="ofsted-tag ${ofstedClass(s.ofsted_rating_latest)}">${ofstedLabel}</span>
             ${qualBadge}
           </div>
           <div class="school-address">${s.address || ""}${s.postcode ? ", " + s.postcode : ""}</div>
+          ${accessRow}
           <div class="school-detail-row">
             ${s.establishment_type ? `<span>${s.establishment_type}</span>` : ""}
             ${inspDate ? `<span>${inspDate}</span>` : ""}
-            ${s.school_urn ? `<span>URN ${s.school_urn}</span>` : ""}
+            ${reportLinkHtml}
+            ${s.school_urn ? `<span style="color:var(--muted);">URN ${s.school_urn}</span>` : ""}
           </div>
+          ${ofstedDetailsHtml}
           ${ks4Html}${ks5Html}
         </div>`;
       }

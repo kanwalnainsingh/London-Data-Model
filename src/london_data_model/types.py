@@ -22,6 +22,13 @@ SCHOOL_OUTPUT_FIELDS = [
     "ofsted_rating_latest",
     "ofsted_inspection_date_latest",
     "ofsted_report_url",
+    # Ofsted sub-ratings (numeric 1-4 → label, "9" = not applicable → None)
+    "ofsted_quality_of_education",
+    "ofsted_leadership_management",
+    "ofsted_personal_development",
+    "ofsted_behaviour_attitudes",
+    "ofsted_sixth_form",
+    "ofsted_safeguarding",
     # KS4 (GCSE) — secondary and all-through schools
     "ks4_progress8",
     "ks4_attainment8",
@@ -118,6 +125,13 @@ class SchoolRecord:
     ofsted_rating_latest: Optional[str] = None
     ofsted_inspection_date_latest: Optional[str] = None
     ofsted_report_url: Optional[str] = None
+    # Ofsted sub-ratings (populated from inspection data; None = not applicable or not available)
+    ofsted_quality_of_education: Optional[str] = None
+    ofsted_leadership_management: Optional[str] = None
+    ofsted_personal_development: Optional[str] = None
+    ofsted_behaviour_attitudes: Optional[str] = None
+    ofsted_sixth_form: Optional[str] = None        # only for schools with a sixth form
+    ofsted_safeguarding: Optional[str] = None      # "Yes" or "No"
     # KS4 (GCSE) results — populated for secondary and all-through schools
     ks4_progress8: Optional[float] = None           # Progress 8 score (-4 to +4 range)
     ks4_attainment8: Optional[float] = None         # Attainment 8 score (0–90 range)
