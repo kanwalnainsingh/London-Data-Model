@@ -1042,6 +1042,7 @@
       let _schoolsCache = null;
       let _thresholdsCache = null;
       let _activePhase = "all";
+      let _performanceAvailability = { ks4: false, ks5: false };
       const SEARCH_RADIUS_KM = 10;
       const SEARCH_FALLBACK_COUNT = 25;
 
@@ -1157,6 +1158,25 @@
           note += ` Results are limited to schools within <strong>${meta.radiusKm} km</strong> of the searched postcode.`;
         }
         return note;
+      }
+
+      function hasAnyMetric(s, keys) {
+        return keys.some(key => s[key] != null);
+      }
+
+      function syncPerformanceAvailabilityFromSchools(schools) {
+        _performanceAvailability.ks4 = schools.some(s => hasAnyMetric(s, [
+          "ks4_progress8",
+          "ks4_attainment8",
+          "ks4_strong_pass_pct",
+          "ks4_standard_pass_pct",
+        ]));
+        _performanceAvailability.ks5 = schools.some(s => hasAnyMetric(s, [
+          "ks5_avg_point_score",
+          "ks5_a_star_a_pct",
+          "ks5_pass_rate_pct",
+          "ks5_entries",
+        ]));
       }
 
       function renderResultsStat(value, label, extraClass) {
@@ -1311,10 +1331,10 @@
                <div class="results-label">GCSE Results</div>
                <div class="results-grid">${ks4Stats}</div>
              </div>`
-          : isSecondary
+          : isSecondary && _performanceAvailability.ks4
           ? `<div class="results-section">
                <div class="results-label">GCSE Results</div>
-               <p style="font-size:12px;color:var(--muted);margin:0;">Performance data not yet loaded — enable ks4_input in pipeline config.</p>
+               <p style="font-size:12px;color:var(--muted);margin:0;">No GCSE metrics are published for this school in the current dataset.</p>
              </div>`
           : "";
 
@@ -1331,10 +1351,10 @@
                <div class="results-label">A-Level Results</div>
                <div class="results-grid">${ks5Stats}</div>
              </div>`
-          : hasSixthForm
+          : hasSixthForm && _performanceAvailability.ks5
           ? `<div class="results-section">
                <div class="results-label">A-Level Results</div>
-               <p style="font-size:12px;color:var(--muted);margin:0;">Performance data not yet loaded — enable ks5_input in pipeline config.</p>
+               <p style="font-size:12px;color:var(--muted);margin:0;">No A-level metrics are published for this school in the current dataset.</p>
              </div>`
           : "";
 
@@ -1408,6 +1428,7 @@
           const r = await fetch(url);
           if (r.ok) {
             _schoolsCache = await r.json();
+            syncPerformanceAvailabilityFromSchools(_schoolsCache);
             _schoolsCache._sourceUrl = url;
             return _schoolsCache;
           }
@@ -1535,6 +1556,11 @@
       function renderSourcesFromJson(data) {
         const sources = data.sources || [];
         if (!sources.length) return;
+        const performanceSources = sources.filter(s => s.source_category === "performance_statistics");
+        const ks4Source = performanceSources.find(s => (s.label || "").toLowerCase().includes("ks4"));
+        const ks5Source = performanceSources.find(s => (s.label || "").toLowerCase().includes("ks5"));
+        if (ks4Source) _performanceAvailability.ks4 = ks4Source.status === "loaded" || ks4Source.status === "skipped";
+        if (ks5Source) _performanceAvailability.ks5 = ks5Source.status === "loaded" || ks5Source.status === "skipped";
 
         // Build an enriched table replacing the static one
         const rows = sources.map(s => {
