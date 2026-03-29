@@ -54,12 +54,22 @@ class TransformRulesTestCase(unittest.TestCase):
         self.assertEqual(band, "moderate")
 
     def test_calculate_proximity_score_is_distance_only_and_bounded(self) -> None:
+        # secondary proximity_zero_at_km = 20; score = 100*(1 - 2.5/20) = 87.5
         score = calculate_proximity_score("secondary", 2.5, self.threshold_config)
-        self.assertEqual(score, 75.0)
+        self.assertEqual(score, 87.5)
 
     def test_calculate_proximity_score_returns_zero_at_or_beyond_zero_point(self) -> None:
+        # primary proximity_zero_at_km = 15; distance 7.0 < 15 so score > 0
+        # score = 100*(1 - 7.0/15) = 53.33
         score = calculate_proximity_score("primary", 7.0, self.threshold_config)
+        self.assertEqual(score, 53.33)
+
+    def test_calculate_proximity_score_is_zero_at_max_distance(self) -> None:
+        # primary proximity_zero_at_km = 15; distance >= 15 → score = 0
+        score = calculate_proximity_score("primary", 15.0, self.threshold_config)
         self.assertEqual(score, 0.0)
+        score_beyond = calculate_proximity_score("primary", 20.0, self.threshold_config)
+        self.assertEqual(score_beyond, 0.0)
 
     def test_normalize_phase_rejects_unknown_values(self) -> None:
         self.assertIsNone(normalize_phase("college"))
@@ -105,7 +115,8 @@ class TransformRulesTestCase(unittest.TestCase):
         self.assertEqual(result.excluded_record_count, 0)
         self.assertEqual(result.records[0].accessibility_band, "close")
         self.assertAlmostEqual(result.records[0].distance_km, 1.001, places=3)
-        self.assertEqual(result.records[0].proximity_score, 83.32)
+        # primary proximity_zero_at_km = 15; score = 100*(1 - 1.001/15) = 93.33
+        self.assertEqual(result.records[0].proximity_score, 93.33)
 
     def test_transform_excludes_private_special_college_and_closed_records(self) -> None:
         extracted = ExtractResult(

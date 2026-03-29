@@ -1,12 +1,12 @@
 {
   "region_id": "london",
-  "generated_at": "2026-03-28T13:52:21.021218+00:00",
+  "generated_at": "2026-03-29T08:18:15.312299+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2129,
+  "school_count_total": 2254,
   "quality_counts": {
-    "complete": 2057,
-    "partial": 72,
+    "complete": 2178,
+    "partial": 76,
     "poor": 0
   },
   "areas": [
@@ -28,10 +28,10 @@
       "label": "London Borough of Barnet",
       "area_type": "borough",
       "la_code": 302,
-      "school_count": 81,
+      "school_count": 119,
       "quality_counts": {
-        "complete": 77,
-        "partial": 4,
+        "complete": 112,
+        "partial": 7,
         "poor": 0
       },
       "status_url": "./data/barnet-status.json"
@@ -41,9 +41,9 @@
       "label": "London Borough of Bexley",
       "area_type": "borough",
       "la_code": 303,
-      "school_count": 75,
+      "school_count": 76,
       "quality_counts": {
-        "complete": 72,
+        "complete": 73,
         "partial": 3,
         "poor": 0
       },
@@ -54,9 +54,9 @@
       "label": "London Borough of Brent",
       "area_type": "borough",
       "la_code": 304,
-      "school_count": 72,
+      "school_count": 76,
       "quality_counts": {
-        "complete": 71,
+        "complete": 75,
         "partial": 1,
         "poor": 0
       },
@@ -67,9 +67,9 @@
       "label": "London Borough of Bromley",
       "area_type": "borough",
       "la_code": 305,
-      "school_count": 76,
+      "school_count": 95,
       "quality_counts": {
-        "complete": 73,
+        "complete": 92,
         "partial": 3,
         "poor": 0
       },
@@ -106,9 +106,9 @@
       "label": "London Borough of Croydon",
       "area_type": "borough",
       "la_code": 306,
-      "school_count": 97,
+      "school_count": 110,
       "quality_counts": {
-        "complete": 92,
+        "complete": 105,
         "partial": 5,
         "poor": 0
       },
@@ -119,9 +119,9 @@
       "label": "London Borough of Ealing",
       "area_type": "borough",
       "la_code": 307,
-      "school_count": 77,
+      "school_count": 82,
       "quality_counts": {
-        "complete": 75,
+        "complete": 80,
         "partial": 2,
         "poor": 0
       },
@@ -132,9 +132,9 @@
       "label": "London Borough of Enfield",
       "area_type": "borough",
       "la_code": 308,
-      "school_count": 88,
+      "school_count": 89,
       "quality_counts": {
-        "complete": 83,
+        "complete": 84,
         "partial": 5,
         "poor": 0
       },
@@ -145,9 +145,9 @@
       "label": "Royal Borough of Greenwich",
       "area_type": "borough",
       "la_code": 203,
-      "school_count": 76,
+      "school_count": 78,
       "quality_counts": {
-        "complete": 72,
+        "complete": 74,
         "partial": 4,
         "poor": 0
       },
@@ -210,10 +210,10 @@
       "label": "London Borough of Havering",
       "area_type": "borough",
       "la_code": 311,
-      "school_count": 72,
+      "school_count": 77,
       "quality_counts": {
-        "complete": 72,
-        "partial": 0,
+        "complete": 76,
+        "partial": 1,
         "poor": 0
       },
       "status_url": "./data/havering-status.json"
@@ -223,9 +223,9 @@
       "label": "London Borough of Hillingdon",
       "area_type": "borough",
       "la_code": 312,
-      "school_count": 66,
+      "school_count": 86,
       "quality_counts": {
-        "complete": 65,
+        "complete": 85,
         "partial": 1,
         "poor": 0
       },
@@ -236,9 +236,9 @@
       "label": "London Borough of Hounslow",
       "area_type": "borough",
       "la_code": 313,
-      "school_count": 63,
+      "school_count": 70,
       "quality_counts": {
-        "complete": 57,
+        "complete": 64,
         "partial": 6,
         "poor": 0
       },
@@ -340,9 +340,9 @@
       "label": "London Borough of Redbridge",
       "area_type": "borough",
       "la_code": 317,
-      "school_count": 68,
+      "school_count": 71,
       "quality_counts": {
-        "complete": 67,
+        "complete": 70,
         "partial": 1,
         "poor": 0
       },
@@ -353,9 +353,9 @@
       "label": "London Borough of Richmond upon Thames",
       "area_type": "borough",
       "la_code": 318,
-      "school_count": 52,
+      "school_count": 56,
       "quality_counts": {
-        "complete": 52,
+        "complete": 56,
         "partial": 0,
         "poor": 0
       },
@@ -431,9 +431,9 @@
       "label": "City of Westminster",
       "area_type": "borough",
       "la_code": 213,
-      "school_count": 41,
+      "school_count": 44,
       "quality_counts": {
-        "complete": 40,
+        "complete": 43,
         "partial": 1,
         "poor": 0
       },
