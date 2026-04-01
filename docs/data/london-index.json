@@ -1,12 +1,12 @@
 {
   "region_id": "london",
-  "generated_at": "2026-03-31T07:47:25.276993+00:00",
+  "generated_at": "2026-04-01T07:57:39.154424+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2244,
+  "school_count_total": 2254,
   "quality_counts": {
     "complete": 2202,
-    "partial": 42,
+    "partial": 52,
     "poor": 0
   },
   "areas": [
@@ -119,10 +119,10 @@
       "label": "London Borough of Ealing",
       "area_type": "borough",
       "la_code": 307,
-      "school_count": 74,
+      "school_count": 82,
       "quality_counts": {
         "complete": 74,
-        "partial": 0,
+        "partial": 8,
         "poor": 0
       },
       "status_url": "./data/ealing-status.json"
@@ -223,10 +223,10 @@
       "label": "London Borough of Hillingdon",
       "area_type": "borough",
       "la_code": 312,
-      "school_count": 85,
+      "school_count": 86,
       "quality_counts": {
         "complete": 84,
-        "partial": 1,
+        "partial": 2,
         "poor": 0
       },
       "status_url": "./data/hillingdon-status.json"
@@ -431,10 +431,10 @@
       "label": "City of Westminster",
       "area_type": "borough",
       "la_code": 213,
-      "school_count": 43,
+      "school_count": 44,
       "quality_counts": {
         "complete": 42,
-        "partial": 1,
+        "partial": 2,
         "poor": 0
       },
       "status_url": "./data/westminster-status.json"
