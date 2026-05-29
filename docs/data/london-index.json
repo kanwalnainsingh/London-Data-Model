@@ -1,11 +1,11 @@
 {
   "region_id": "london",
-  "generated_at": "2026-05-28T10:35:59.088969+00:00",
+  "generated_at": "2026-05-29T10:16:28.067698+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2254,
+  "school_count_total": 2253,
   "quality_counts": {
-    "complete": 2202,
+    "complete": 2201,
     "partial": 52,
     "poor": 0
   },
@@ -223,9 +223,9 @@
       "label": "London Borough of Hillingdon",
       "area_type": "borough",
       "la_code": 312,
-      "school_count": 86,
+      "school_count": 85,
       "quality_counts": {
-        "complete": 84,
+        "complete": 83,
         "partial": 2,
         "poor": 0
       },
