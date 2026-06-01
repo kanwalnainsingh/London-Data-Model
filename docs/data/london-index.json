@@ -1,12 +1,12 @@
 {
   "region_id": "london",
-  "generated_at": "2026-05-31T09:26:16.673095+00:00",
+  "generated_at": "2026-06-01T12:12:04.383082+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2252,
+  "school_count_total": 2253,
   "quality_counts": {
     "complete": 2200,
-    "partial": 52,
+    "partial": 53,
     "poor": 0
   },
   "areas": [
@@ -171,10 +171,10 @@
       "label": "London Borough of Hammersmith and Fulham",
       "area_type": "borough",
       "la_code": 205,
-      "school_count": 46,
+      "school_count": 47,
       "quality_counts": {
         "complete": 46,
-        "partial": 0,
+        "partial": 1,
         "poor": 0
       },
       "status_url": "./data/hammersmith-and-fulham-status.json"
