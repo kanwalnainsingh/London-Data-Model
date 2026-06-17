@@ -1,11 +1,11 @@
 {
   "region_id": "london",
-  "generated_at": "2026-06-16T11:37:41.541210+00:00",
+  "generated_at": "2026-06-17T11:20:02.027556+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2253,
+  "school_count_total": 2252,
   "quality_counts": {
-    "complete": 2200,
+    "complete": 2199,
     "partial": 53,
     "poor": 0
   },
@@ -54,9 +54,9 @@
       "label": "London Borough of Brent",
       "area_type": "borough",
       "la_code": 304,
-      "school_count": 76,
+      "school_count": 75,
       "quality_counts": {
-        "complete": 76,
+        "complete": 75,
         "partial": 0,
         "poor": 0
       },
