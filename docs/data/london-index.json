@@ -1,12 +1,12 @@
 {
   "region_id": "london",
-  "generated_at": "2026-06-30T10:04:13.105721+00:00",
+  "generated_at": "2026-07-01T10:17:47.023709+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2247,
+  "school_count_total": 2252,
   "quality_counts": {
     "complete": 2194,
-    "partial": 53,
+    "partial": 58,
     "poor": 0
   },
   "areas": [
@@ -54,10 +54,10 @@
       "label": "London Borough of Brent",
       "area_type": "borough",
       "la_code": 304,
-      "school_count": 73,
+      "school_count": 75,
       "quality_counts": {
         "complete": 73,
-        "partial": 0,
+        "partial": 2,
         "poor": 0
       },
       "status_url": "./data/brent-status.json"
@@ -184,10 +184,10 @@
       "label": "London Borough of Haringey",
       "area_type": "borough",
       "la_code": 309,
-      "school_count": 69,
+      "school_count": 72,
       "quality_counts": {
         "complete": 67,
-        "partial": 2,
+        "partial": 5,
         "poor": 0
       },
       "status_url": "./data/haringey-status.json"
