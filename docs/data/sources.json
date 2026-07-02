@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-01T10:17:47.063972+00:00",
+  "generated_at": "2026-07-02T09:35:55.981021+00:00",
   "input_mode": "official",
   "sources": [
     {
@@ -29,16 +29,16 @@
         "Town",
         "County (name)"
       ],
-      "url": "https://ea-edubase-api-prod.azurewebsites.net/edubase/downloads/public/edubasealldata20260701.csv",
-      "fetched_at": "2026-07-01T10:15:48.448125+00:00",
+      "url": "https://ea-edubase-api-prod.azurewebsites.net/edubase/downloads/public/edubasealldata20260702.csv",
+      "fetched_at": "2026-07-02T09:33:57.327403+00:00",
       "file_path": "/home/runner/work/London-Data-Model/London-Data-Model/data/raw/gias_establishments.csv",
-      "file_size_bytes": 64500513,
+      "file_size_bytes": 64501443,
       "file_size_mb": 61.51,
-      "source_date": "2026-07-01",
+      "source_date": "2026-07-02",
       "academic_year": null,
       "status": "loaded",
       "notes": [
-        "schools: downloaded from GIAS (https://ea-edubase-api-prod.azurewebsites.net/edubase/downloads/public/edubasealldata20260701.csv)"
+        "schools: downloaded from GIAS (https://ea-edubase-api-prod.azurewebsites.net/edubase/downloads/public/edubasealldata20260702.csv)"
       ]
     },
     {
@@ -58,7 +58,7 @@
         "Published date"
       ],
       "url": "https://assets.publishing.service.gov.uk/media/67ea6bdef0edd954a99fe925/five-year-ofsted-inspection-data_state-funded-schools.ods",
-      "fetched_at": "2026-07-01T10:17:40.277525+00:00",
+      "fetched_at": "2026-07-02T09:35:49.508377+00:00",
       "file_path": "/home/runner/work/London-Data-Model/London-Data-Model/data/raw/ofsted_state_funded_schools.csv",
       "file_size_bytes": 30401566,
       "file_size_mb": 28.99,
