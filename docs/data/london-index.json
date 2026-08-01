@@ -1,12 +1,12 @@
 {
   "region_id": "london",
-  "generated_at": "2026-07-31T09:19:34.983509+00:00",
+  "generated_at": "2026-08-01T08:36:22.172660+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2251,
+  "school_count_total": 2252,
   "quality_counts": {
     "complete": 2193,
-    "partial": 58,
+    "partial": 59,
     "poor": 0
   },
   "areas": [
@@ -431,10 +431,10 @@
       "label": "City of Westminster",
       "area_type": "borough",
       "la_code": 213,
-      "school_count": 43,
+      "school_count": 44,
       "quality_counts": {
         "complete": 41,
-        "partial": 2,
+        "partial": 3,
         "poor": 0
       },
       "status_url": "./data/westminster-status.json"
