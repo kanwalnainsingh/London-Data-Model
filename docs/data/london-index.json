@@ -1,11 +1,11 @@
 {
   "region_id": "london",
-  "generated_at": "2026-08-30T11:59:19.908306+00:00",
+  "generated_at": "2026-08-31T13:58:22.519687+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2252,
+  "school_count_total": 2245,
   "quality_counts": {
-    "complete": 2193,
+    "complete": 2186,
     "partial": 59,
     "poor": 0
   },
@@ -41,9 +41,9 @@
       "label": "London Borough of Bexley",
       "area_type": "borough",
       "la_code": 303,
-      "school_count": 76,
+      "school_count": 75,
       "quality_counts": {
-        "complete": 75,
+        "complete": 74,
         "partial": 1,
         "poor": 0
       },
@@ -223,9 +223,9 @@
       "label": "London Borough of Hillingdon",
       "area_type": "borough",
       "la_code": 312,
-      "school_count": 85,
+      "school_count": 84,
       "quality_counts": {
-        "complete": 83,
+        "complete": 82,
         "partial": 2,
         "poor": 0
       },
@@ -327,9 +327,9 @@
       "label": "London Borough of Newham",
       "area_type": "borough",
       "la_code": 316,
-      "school_count": 88,
+      "school_count": 87,
       "quality_counts": {
-        "complete": 87,
+        "complete": 86,
         "partial": 1,
         "poor": 0
       },
@@ -379,9 +379,9 @@
       "label": "London Borough of Sutton",
       "area_type": "borough",
       "la_code": 319,
-      "school_count": 56,
+      "school_count": 55,
       "quality_counts": {
-        "complete": 51,
+        "complete": 50,
         "partial": 5,
         "poor": 0
       },
@@ -405,9 +405,9 @@
       "label": "London Borough of Waltham Forest",
       "area_type": "borough",
       "la_code": 320,
-      "school_count": 68,
+      "school_count": 67,
       "quality_counts": {
-        "complete": 68,
+        "complete": 67,
         "partial": 0,
         "poor": 0
       },
@@ -418,9 +418,9 @@
       "label": "London Borough of Wandsworth",
       "area_type": "borough",
       "la_code": 212,
-      "school_count": 69,
+      "school_count": 67,
       "quality_counts": {
-        "complete": 68,
+        "complete": 66,
         "partial": 1,
         "poor": 0
       },
