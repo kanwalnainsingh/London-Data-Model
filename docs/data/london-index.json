@@ -1,12 +1,12 @@
 {
   "region_id": "london",
-  "generated_at": "2026-08-31T13:58:22.519687+00:00",
+  "generated_at": "2026-09-01T11:44:00.162119+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2245,
+  "school_count_total": 2250,
   "quality_counts": {
     "complete": 2186,
-    "partial": 59,
+    "partial": 64,
     "poor": 0
   },
   "areas": [
@@ -41,10 +41,10 @@
       "label": "London Borough of Bexley",
       "area_type": "borough",
       "la_code": 303,
-      "school_count": 75,
+      "school_count": 76,
       "quality_counts": {
         "complete": 74,
-        "partial": 1,
+        "partial": 2,
         "poor": 0
       },
       "status_url": "./data/bexley-status.json"
@@ -379,10 +379,10 @@
       "label": "London Borough of Sutton",
       "area_type": "borough",
       "la_code": 319,
-      "school_count": 55,
+      "school_count": 56,
       "quality_counts": {
         "complete": 50,
-        "partial": 5,
+        "partial": 6,
         "poor": 0
       },
       "status_url": "./data/sutton-status.json"
@@ -405,10 +405,10 @@
       "label": "London Borough of Waltham Forest",
       "area_type": "borough",
       "la_code": 320,
-      "school_count": 67,
+      "school_count": 68,
       "quality_counts": {
         "complete": 67,
-        "partial": 0,
+        "partial": 1,
         "poor": 0
       },
       "status_url": "./data/waltham-forest-status.json"
@@ -418,10 +418,10 @@
       "label": "London Borough of Wandsworth",
       "area_type": "borough",
       "la_code": 212,
-      "school_count": 67,
+      "school_count": 69,
       "quality_counts": {
         "complete": 66,
-        "partial": 1,
+        "partial": 3,
         "poor": 0
       },
       "status_url": "./data/wandsworth-status.json"
