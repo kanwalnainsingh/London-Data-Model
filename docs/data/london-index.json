@@ -1,11 +1,11 @@
 {
   "region_id": "london",
-  "generated_at": "2026-09-18T11:21:04.887860+00:00",
+  "generated_at": "2026-09-19T11:05:41.439004+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2249,
+  "school_count_total": 2248,
   "quality_counts": {
-    "complete": 2185,
+    "complete": 2184,
     "partial": 64,
     "poor": 0
   },
@@ -249,9 +249,9 @@
       "label": "London Borough of Islington",
       "area_type": "borough",
       "la_code": 206,
-      "school_count": 50,
+      "school_count": 49,
       "quality_counts": {
-        "complete": 48,
+        "complete": 47,
         "partial": 2,
         "poor": 0
       },
