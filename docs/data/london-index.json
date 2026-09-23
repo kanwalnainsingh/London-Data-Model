@@ -1,12 +1,12 @@
 {
   "region_id": "london",
-  "generated_at": "2026-09-22T11:44:48.161223+00:00",
+  "generated_at": "2026-09-23T11:44:29.170962+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2248,
+  "school_count_total": 2249,
   "quality_counts": {
     "complete": 2184,
-    "partial": 64,
+    "partial": 65,
     "poor": 0
   },
   "areas": [
@@ -28,10 +28,10 @@
       "label": "London Borough of Barnet",
       "area_type": "borough",
       "la_code": 302,
-      "school_count": 119,
+      "school_count": 120,
       "quality_counts": {
         "complete": 116,
-        "partial": 3,
+        "partial": 4,
         "poor": 0
       },
       "status_url": "./data/barnet-status.json"
