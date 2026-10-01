@@ -1,12 +1,12 @@
 {
   "region_id": "london",
-  "generated_at": "2026-09-30T12:40:55.559461+00:00",
+  "generated_at": "2026-10-01T13:23:49.072277+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2248,
+  "school_count_total": 2249,
   "quality_counts": {
     "complete": 2183,
-    "partial": 65,
+    "partial": 66,
     "poor": 0
   },
   "areas": [
@@ -132,10 +132,10 @@
       "label": "London Borough of Enfield",
       "area_type": "borough",
       "la_code": 308,
-      "school_count": 88,
+      "school_count": 89,
       "quality_counts": {
         "complete": 85,
-        "partial": 3,
+        "partial": 4,
         "poor": 0
       },
       "status_url": "./data/enfield-status.json"
