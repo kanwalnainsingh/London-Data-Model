@@ -1,11 +1,11 @@
 {
   "region_id": "london",
-  "generated_at": "2026-10-06T13:23:40.428815+00:00",
+  "generated_at": "2026-10-07T13:31:01.692096+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2249,
+  "school_count_total": 2248,
   "quality_counts": {
-    "complete": 2183,
+    "complete": 2182,
     "partial": 66,
     "poor": 0
   },
@@ -418,9 +418,9 @@
       "label": "London Borough of Wandsworth",
       "area_type": "borough",
       "la_code": 212,
-      "school_count": 69,
+      "school_count": 68,
       "quality_counts": {
-        "complete": 66,
+        "complete": 65,
         "partial": 3,
         "poor": 0
       },
