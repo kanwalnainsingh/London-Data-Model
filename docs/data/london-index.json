@@ -1,11 +1,11 @@
 {
   "region_id": "london",
-  "generated_at": "2026-10-30T13:01:53.919494+00:00",
+  "generated_at": "2026-10-31T12:39:27.773788+00:00",
   "input_mode": "official",
   "borough_count": 33,
-  "school_count_total": 2248,
+  "school_count_total": 2246,
   "quality_counts": {
-    "complete": 2182,
+    "complete": 2180,
     "partial": 66,
     "poor": 0
   },
@@ -314,9 +314,9 @@
       "label": "London Borough of Merton",
       "area_type": "borough",
       "la_code": 315,
-      "school_count": 52,
+      "school_count": 50,
       "quality_counts": {
-        "complete": 50,
+        "complete": 48,
         "partial": 2,
         "poor": 0
       },
